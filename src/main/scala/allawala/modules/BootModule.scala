@@ -16,6 +16,7 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 class AkkaHttp @Inject()(
+                          val config: Configuration,
                           implicit val actorSystem: ActorSystem,
                           implicit val actorMaterializer: ActorMaterializer,
                           implicit val ec: ExecutionContext,
@@ -23,31 +24,35 @@ class AkkaHttp @Inject()(
 
   def run(route: Route): Unit = {
     implicit val timeout = Timeout(10.seconds)
-    Http().bindAndHandle(route, "127.0.0.1", 8080).onComplete {
+    Http().bindAndHandle(route, config.httpConfig.host, config.httpConfig.port).onComplete {
 
       case Success(b) => {
-        logger.debug(s"**** AKKA HTTP SYSTEM INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****.")
+        logger.debug(
+          s"**** [${actorSystem.name}] INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****."
+        )
         sys.addShutdownHook {
-          logger.debug("**** AKKA HTTP SYSTEM SHUTTING DOWN ****.")
+          logger.debug(s"**** [${actorSystem.name}] SHUTTING DOWN ****.")
           b.unbind().onComplete(_ => actorSystem.terminate())
         }
       }
       case Failure(e) =>
-        logger.error(e, "Cannot start server", e)
+        logger.error(e, s"**** [${actorSystem.name}] FAILED TO START **** ")
         actorSystem.terminate()
     }
 
   }
 }
 
-class ChassisModule extends AbstractModule with ScalaModule {
+class BootModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {
+    install(new ConfigModule)
+
     bind[AkkaHttp].asEagerSingleton()
   }
 }
 
-object ChassisModule {
-  def apply(): Module = new ChassisModule
+object BootModule {
+  def apply(): Module = new BootModule
 
   @Provides
   @Singleton
@@ -57,8 +62,8 @@ object ChassisModule {
 
   @Provides
   @Singleton
-  def getActorSystem(): ActorSystem = {
-    ActorSystem("service-chassis")
+  def getActorSystem(config: Configuration): ActorSystem = {
+    ActorSystem(config.name)
   }
 
   @Provides
