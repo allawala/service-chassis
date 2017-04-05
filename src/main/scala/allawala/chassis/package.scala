@@ -1,4 +1,6 @@
-package object allawala {
+package allawala
+
+package object chassis {
   /*
     Seq is not aliased to immutable by default like the other collection types,
     http://hseeberger.github.io/blog/2013/10/25/attention-seq-is-not-immutable/

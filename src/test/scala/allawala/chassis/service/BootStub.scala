@@ -1,12 +1,10 @@
-package allawala
+package allawala.chassis.service
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server._
+import allawala.chassis.service.model.{Ping, Pong}
 import com.google.inject.Module
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
-
-case class Ping(name: String)
-case class Pong(name: String)
 
 class BootStub extends Boot with Directives with ErrorAccumulatingCirceSupport {
   override def getModules: List[Module] = List[Module]()

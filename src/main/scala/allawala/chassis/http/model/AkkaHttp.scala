@@ -1,15 +1,14 @@
-package allawala.modules
+package allawala.chassis.http.model
 
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
-import akka.event.{Logging, LoggingAdapter}
+import akka.event.LoggingAdapter
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.google.inject.{AbstractModule, Module, Provides, Singleton}
-import net.codingwell.scalaguice.ScalaModule
+import allawala.chassis.config.model.Configuration
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -40,41 +39,5 @@ class AkkaHttp @Inject()(
         actorSystem.terminate()
     }
 
-  }
-}
-
-class BootModule extends AbstractModule with ScalaModule {
-  override def configure(): Unit = {
-    install(new ConfigModule)
-
-    bind[AkkaHttp].asEagerSingleton()
-  }
-}
-
-object BootModule {
-  def apply(): Module = new BootModule
-
-  @Provides
-  @Singleton
-  def getAkkaMaterializer(implicit actorSystem: ActorSystem): ActorMaterializer = {
-    ActorMaterializer()
-  }
-
-  @Provides
-  @Singleton
-  def getActorSystem(config: Configuration): ActorSystem = {
-    ActorSystem(config.name)
-  }
-
-  @Provides
-  @Singleton
-  def getDefaultExecutionContextExecutor(implicit actorSystem: ActorSystem) : ExecutionContext = {
-    actorSystem.dispatcher
-  }
-
-  @Provides
-  @Singleton
-  def getLoggingAdapter(implicit actorSystem: ActorSystem) : LoggingAdapter = {
-    Logging(actorSystem, getClass)
   }
 }

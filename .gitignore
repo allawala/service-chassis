@@ -28,4 +28,4 @@ logs
 .DS_Store
 
 #vagrant
-/vagrant/.vagrant
+.vagrant

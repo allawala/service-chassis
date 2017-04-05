@@ -1,13 +1,11 @@
-package allawala.modules
+package allawala.chassis.config.module
 
+import allawala.chassis.config.model.Configuration
 import com.google.inject.{AbstractModule, Provides, Singleton}
 import com.typesafe.config.{Config, ConfigFactory}
-import net.codingwell.scalaguice.ScalaModule
 import net.ceedubs.ficus.Ficus
 import net.ceedubs.ficus.readers.ArbitraryTypeReader
-
-case class HttpConfig(host: String, port: Int)
-case class Configuration(name: String, httpConfig: HttpConfig)
+import net.codingwell.scalaguice.ScalaModule
 
 class ConfigModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {}

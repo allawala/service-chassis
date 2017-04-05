@@ -1,7 +1,8 @@
-package allawala
+package allawala.chassis.service
 
 import akka.http.scaladsl.server.Route
-import allawala.modules.{AkkaHttp, BootModule}
+import allawala.chassis.http.model.AkkaHttp
+import allawala.chassis.http.module.BootModule
 import com.google.inject.{Guice, Injector, Module, Stage}
 import net.codingwell.scalaguice.InjectorExtensions._
 

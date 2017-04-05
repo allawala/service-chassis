@@ -35,6 +35,13 @@ libraryDependencies ++= {
     // Akka
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
 
+    // Config
+    "com.iheart" %% "ficus" % ficusVersion,
+
+    // DI
+    "com.google.inject" % "guice" % guiceVersion,
+    "net.codingwell" %% "scala-guice" % guiceVersion,
+
     // Json
     "io.circe" %% "circe-core" % circeVersion,
     "io.circe" %% "circe-generic" % circeVersion,
@@ -44,13 +51,6 @@ libraryDependencies ++= {
     // Logging
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
-
-    // Config
-    "com.iheart" %% "ficus" % ficusVersion,
-
-    // DI
-    "com.google.inject" % "guice" % guiceVersion,
-    "net.codingwell" %% "scala-guice" % guiceVersion,
 
     // Test Dependencies
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,

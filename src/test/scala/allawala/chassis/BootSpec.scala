@@ -1,7 +1,9 @@
-package allawala
+package allawala.chassis
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
+import allawala.chassis.service.BootStub
+import allawala.chassis.service.model.{Ping, Pong}
 
 class BootSpec extends RoutesSpec {
   val route = Route.seal( (new BootStub).getRoute )
