@@ -1,4 +1,4 @@
-package allawala.chassis
+package allawala.chassis.core
 
 import akka.http.scaladsl.model.MediaRange
 import akka.http.scaladsl.model.MediaTypes._

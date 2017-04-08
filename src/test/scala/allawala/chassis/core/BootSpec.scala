@@ -1,9 +1,8 @@
-package allawala.chassis
+package allawala.chassis.core
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
-import allawala.chassis.service.BootStub
-import allawala.chassis.service.model.{Ping, Pong}
+import allawala.chassis.core.model.{Ping, Pong}
 import com.typesafe.scalalogging.StrictLogging
 
 class BootSpec extends RoutesSpec with StrictLogging {
