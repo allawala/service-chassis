@@ -27,8 +27,11 @@ libraryDependencies ++= {
   val akkaHttpCirceVersion = "1.13.0"
   val circeVersion = "0.7.0"
   val ficusVersion = "1.4.0"
+  val groovyVersion = "2.4.10"
   val guiceVersion = "4.1.0"
   val logbackVersion = "1.2.2"
+  val logstashVersion = "4.9"
+  val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
 
   Seq(
@@ -49,8 +52,11 @@ libraryDependencies ++= {
     "de.heikoseeberger" %% "akka-http-circe" % akkaHttpCirceVersion excludeAll ExclusionRule(organization = "io.circe"),
 
     // Logging
+    "org.codehaus.groovy" % "groovy-all" % groovyVersion, // To allow log config to be defined in groovy
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
+    "net.logstash.logback" % "logstash-logback-encoder" % logstashVersion,
+    "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
 
     // Test Dependencies
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,

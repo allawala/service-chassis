@@ -26,3 +26,18 @@ Joining the cluster can be tested manually by running the following command from
 
 `docker run -d -p 8300:8300 -p 8301:8301 -p 8301:8301/udp -p 8302:8302 -p 8302:8302/udp -p 8400:8400 -p 8500:8500 progrium/consul -advertise 127.0.0.1 -join {static-ip}` 
 where the {static-ip} is the ip defined in the vagrant file for the services box
+
+
+## LOGSTASH
+If enabled in the configuration, Logstash with ES/Kibana will be used for logging.
+
+For local testing, elastic search and kibana will be installed on the `services` box
+
+With the services box running, kibana can be accessed at `http://{static-ip}:5601/`
+
+To test locally, enable logstash in the configuration, and start up a local docker container running logstash which will 
+forward the logs to the elastic search server running on the `services` vagrant box
+
+`docker run -p 51515:51515 logstash -e 'input { tcp { port => 51515 codec => json_lines } } output { elasticsearch { hosts => ["192.168.1.10"]} }'`
+
+-e flag allows us to specify the configuration as part of the command
