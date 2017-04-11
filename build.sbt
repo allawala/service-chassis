@@ -32,6 +32,7 @@ libraryDependencies ++= {
   val guiceVersion = "4.1.0"
   val logbackVersion = "1.2.2"
   val logstashVersion = "4.9"
+  val metricsVersion = "3.5.6_a2.4"
   val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
 
@@ -63,7 +64,10 @@ libraryDependencies ++= {
     "net.logstash.logback" % "logstash-logback-encoder" % logstashVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
 
-    // Test Dependencies
+    // Metrics
+    "nl.grons" %% "metrics-scala" % metricsVersion,
+
+  // Test Dependencies
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,
     "org.scalatest" %% "scalatest" % scalatestVersion % "test"
   )

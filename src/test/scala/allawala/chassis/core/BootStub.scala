@@ -17,7 +17,7 @@ class BootStub extends Boot with RouteWrapper {
   lazy val system = injector.instance[ActorSystem]
   lazy val asyncService = new AsyncService(system)
 
-  override def getRoute: Route = {
+  override lazy val getRoute: Route = {
     import io.circe.generic.auto._
     correlationHeader { cid =>
       get {

@@ -7,6 +7,7 @@ import akka.event.{Logging, LoggingAdapter}
 import akka.stream.ActorMaterializer
 import allawala.chassis.config.model.Configuration
 import allawala.chassis.config.module.ConfigModule
+import allawala.chassis.health.module.HealthModule
 import allawala.chassis.http.model.AkkaHttp
 import allawala.chassis.http.module.RouteModule
 import com.google.inject.{AbstractModule, Module, Provides, Singleton}
@@ -19,6 +20,7 @@ class BootModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {
     install(new ConfigModule)
     install(new RouteModule)
+    install(new HealthModule)
 
     bind[AkkaHttp].asEagerSingleton()
   }
