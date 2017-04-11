@@ -26,6 +26,7 @@ libraryDependencies ++= {
   val akkaHttpVersion = "10.0.5"
   val akkaHttpCirceVersion = "1.13.0"
   val circeVersion = "0.7.0"
+  val enumeratumVersion = "1.5.10"
   val ficusVersion = "1.4.0"
   val groovyVersion = "2.4.10"
   val guiceVersion = "4.1.0"
@@ -45,6 +46,10 @@ libraryDependencies ++= {
     "com.google.inject" % "guice" % guiceVersion,
     "net.codingwell" %% "scala-guice" % guiceVersion,
 
+    // Enums
+    "com.beachape" %% "enumeratum" % enumeratumVersion,
+    "com.beachape" %% "enumeratum-circe" % enumeratumVersion,
+
     // Json
     "io.circe" %% "circe-core" % circeVersion,
     "io.circe" %% "circe-generic" % circeVersion,
@@ -63,6 +68,9 @@ libraryDependencies ++= {
     "org.scalatest" %% "scalatest" % scalatestVersion % "test"
   )
 }
+
+// Dependency tree
+dependencyDotFile := file("dependencies.dot") //render dot file to `./dependencies.dot`
 
 initialCommands :=
   """

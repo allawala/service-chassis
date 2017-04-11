@@ -11,12 +11,11 @@ import net.codingwell.scalaguice.InjectorExtensions._
 trait Boot {
   def getModules: List[Module]
   def getRoute: Route
-  protected var injector: Injector = _
+  private val modules: List[Module] = BootModule() :: getModules
+  protected var injector: Injector = Guice.createInjector(Stage.PRODUCTION, modules:_*)
 
 
   def run(): Unit = {
-    val modules: List[Module] = BootModule() :: getModules
-    injector = Guice.createInjector(Stage.PRODUCTION, modules:_*)
     val akkaHttp = injector.instance[AkkaHttp]
     akkaHttp.run()
   }

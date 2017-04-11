@@ -7,7 +7,7 @@ import akka.event.LoggingAdapter
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import allawala.chassis.config.model.Configuration
+import allawala.chassis.config.model.{Configuration, Environment}
 import allawala.chassis.http.route.Routes
 
 import scala.concurrent.ExecutionContext
@@ -17,6 +17,7 @@ import scala.util.{Failure, Success}
 class AkkaHttp @Inject()(
                           val config: Configuration,
                           val routes: Routes,
+                          val environment: Environment,
                           val logger: LoggingAdapter
                         )(
                           implicit val actorSystem: ActorSystem,
@@ -29,16 +30,26 @@ class AkkaHttp @Inject()(
     Http().bindAndHandle(routes.route, config.httpConfig.host, config.httpConfig.port).onComplete {
 
       case Success(b) => {
-        logger.info(s"**** [${actorSystem.name}] INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****.")
+        logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****.")
+        printLogbackConfig()
         sys.addShutdownHook {
-          logger.info(s"**** [${actorSystem.name}] SHUTTING DOWN ****.")
+          logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] SHUTTING DOWN ****.")
           b.unbind().onComplete(_ => actorSystem.terminate())
         }
       }
       case Failure(e) =>
-        logger.error(e, s"**** [${actorSystem.name}] FAILED TO START **** ")
+        logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] FAILED TO START **** ")
         actorSystem.terminate()
     }
 
+  }
+
+  private def printLogbackConfig() = {
+    import ch.qos.logback.classic.LoggerContext
+    import ch.qos.logback.core.util.StatusPrinter
+    import org.slf4j.LoggerFactory
+
+    val context: LoggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
+    StatusPrinter.print(context)
   }
 }
