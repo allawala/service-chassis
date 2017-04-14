@@ -1,6 +1,6 @@
 name := """service-chassis"""
 
-version := "1.0"
+organization := "allawala"
 
 scalaVersion := "2.12.1"
 
@@ -67,11 +67,135 @@ libraryDependencies ++= {
     // Metrics
     "nl.grons" %% "metrics-scala" % metricsVersion,
 
-  // Test Dependencies
+    // Test Dependencies
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,
     "org.scalatest" %% "scalatest" % scalatestVersion % "test"
   )
 }
+
+// plugins
+enablePlugins(BuildInfoPlugin, GitVersioning, GitBranchPrompt, DockerPlugin)
+
+// BuildInfo plugin Settings
+buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, git.gitCurrentBranch, git.gitHeadCommit)
+buildInfoPackage := "allawala"
+buildInfoOptions += BuildInfoOption.BuildTime
+
+// sbt git plugin settings
+// turn on the version detection
+git.useGitDescribe := true
+git.baseVersion := "1.0.0"
+
+// TODO if dependent projects can reference directly from github, no need, else update to publish to a public maven repo
+// publish info
+publishTo := Some("temp" at "file:///tmp/repository")
+
+lazy val removeDangling = taskKey[Unit]("Task to clean up dangling docker images")
+
+removeDangling := {
+  // TODO get the dockerpath from env like ${DOCKER_HOME}
+  val dockerPath = "/usr/local/bin/docker"
+  val findDangling = s"$dockerPath images -f dangling=true -q"
+  val removeDangling = s"xargs $dockerPath rmi -f"
+
+  val deleted = findDangling.#|(removeDangling).!!
+
+  val s: TaskStreams = streams.value
+  if (deleted.isEmpty) {
+    s.log.info("No dangling images to delete")
+  } else {
+    s.log.info(s"Fhe following dangling images were deleted\n$deleted")
+  }
+}
+
+// docker
+// TODO review these options
+buildOptions in docker := BuildOptions(
+  //  cache = false,
+  removeIntermediateContainers = BuildOptions.Remove.Always
+  //  pullBaseImage = BuildOptions.Pull.Always
+)
+
+imageNames in docker := {
+  val registry = "xxxxx.dkr.ecr.eu-central-1.amazonaws.com/xxxxx"
+
+  def withSha: ImageName = {
+    val tag = for {
+      sha <- git.gitHeadCommit.value
+      v = version.value
+    } yield s"$v-$sha"
+
+    ImageName(
+      registry = Some(registry),
+      repository = name.value,
+      tag = tag
+    )
+  }
+
+  def withoutSha: ImageName = {
+    ImageName(
+      registry = Some(registry),
+      repository = name.value,
+      tag = Some(version.value)
+    )
+  }
+
+  def latest: ImageName = ImageName(
+    registry = Some(organization.value),
+    repository = name.value,
+    tag = Some("latest")
+  )
+
+  // This assumes a multibranch pipeline structure and the presence of BRANCH_NAME env variable
+  val imageName = sys.env.get("BRANCH_NAME").map(_.toLowerCase) match {
+    case Some("develop") => withSha
+    case Some("master") => withoutSha
+    case _ =>
+      latest
+  }
+
+  Seq(imageName)
+}
+
+dockerfile in docker := {
+  val exposePort = 8080
+  // The assembly task generates a fat JAR file
+  val artifact: File = assembly.value
+  val artifactTargetPath = s"/opt/${name.value}/${artifact.name}"
+
+  /*
+  Using the hseeberger/scala-sbt image as a quick start. This is not tagged and can change plus it uses openjdk so this is not
+  a production ready docker image
+  */
+  new Dockerfile {
+    from("hseeberger/scala-sbt")
+    expose(exposePort)
+    copy(artifact, artifactTargetPath)
+    entryPoint("java", "-jar", artifactTargetPath)
+  }
+}
+
+// releasing with the gitflow plugin
+import sbtrelease._
+import com.servicerocket.sbt.release.git.flow.Steps._
+import sbtrelease.ReleaseStateTransformations._
+
+releaseProcess := Seq(
+  releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
+  checkSnapshotDependencies,
+  checkGitFlowExists,
+  inquireVersions,
+  runTest,
+  gitFlowReleaseStart,
+  setReleaseVersion,
+  commitReleaseVersion,
+  publishArtifacts,
+  gitFlowReleaseFinish,
+  pushMaster,
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
+)
 
 // Dependency tree
 dependencyDotFile := file("dependencies.dot") //render dot file to `./dependencies.dot`

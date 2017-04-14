@@ -1,0 +1,10 @@
+- [#1](https://github.com/allawala/service-chassis/issues/1) Create an initial project image
+- [#2](https://github.com/allawala/service-chassis/issues/2) Add akka http and guice
+- [#3](https://github.com/allawala/service-chassis/issues/3) Add config module
+- [#4](https://github.com/allawala/service-chassis/issues/4) Add consul server configuration for vagrant
+- [#5](https://github.com/allawala/service-chassis/issues/5) Refactor packages
+- [#7](https://github.com/allawala/service-chassis/issues/7) Add logging via log stash
+- [#8](https://github.com/allawala/service-chassis/issues/8) Add and propagate correlation id for all incoming requests
+- [#9](https://github.com/allawala/service-chassis/issues/9) Load environment specific configuration
+- [#10](https://github.com/allawala/service-chassis/issues/10) Add a health check endpoint
+- [12](https://github.com/allawala/service-chassis/issues/12) Add versioning, packaging and deployment

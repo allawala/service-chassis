@@ -16,7 +16,7 @@ import net.codingwell.scalaguice.ScalaModule
 import scala.concurrent.ExecutionContext
 
 
-class BootModule extends AbstractModule with ScalaModule {
+class ChassisModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {
     install(new ConfigModule)
     install(new RouteModule)
@@ -26,8 +26,8 @@ class BootModule extends AbstractModule with ScalaModule {
   }
 }
 
-object BootModule {
-  def apply(): Module = new BootModule
+object ChassisModule {
+  def apply(): Module = new ChassisModule
 
   @Provides
   @Singleton
