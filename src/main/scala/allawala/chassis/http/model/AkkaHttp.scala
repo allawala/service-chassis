@@ -1,6 +1,6 @@
 package allawala.chassis.http.model
 
-import javax.inject.{Inject, Named}
+import javax.inject.{Inject, Named, Provider}
 
 import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
@@ -8,9 +8,10 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import allawala.chassis.config.model.{Configuration, Environment}
+import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
@@ -18,7 +19,8 @@ class AkkaHttp @Inject()(
                           val config: Configuration,
                           val routes: Routes,
                           val environment: Environment,
-                          val logger: LoggingAdapter
+                          val logger: LoggingAdapter,
+                          val lifecycleAwareRegistryProvider : Provider[LifecycleAwareRegistry]
                         )(
                           implicit val actorSystem: ActorSystem,
                           implicit val actorMaterializer: ActorMaterializer,
@@ -27,6 +29,18 @@ class AkkaHttp @Inject()(
 
   def run(): Unit = {
     implicit val timeout = Timeout(10.seconds)
+
+    val started: Seq[Future[Unit]] = lifecycleAwareRegistryProvider.get().get().map(_.preStart())
+    Future.sequence(started).onComplete {
+      case Success(_) => bind()
+      case Failure(e) =>
+        logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] PRE START FAILURE **** ")
+        actorSystem.terminate()
+
+    }
+  }
+
+  private def bind() = {
     Http().bindAndHandle(routes.route, config.httpConfig.host, config.httpConfig.port).onComplete {
 
       case Success(b) => {
@@ -41,7 +55,6 @@ class AkkaHttp @Inject()(
         logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] FAILED TO START **** ")
         actorSystem.terminate()
     }
-
   }
 
   private def printLogbackConfig() = {

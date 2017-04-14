@@ -9,7 +9,7 @@ import allawala.chassis.config.model.Configuration
 import allawala.chassis.config.module.ConfigModule
 import allawala.chassis.health.module.HealthModule
 import allawala.chassis.http.model.AkkaHttp
-import allawala.chassis.http.module.RouteModule
+import allawala.chassis.http.module.HttpModule
 import com.google.inject.{AbstractModule, Module, Provides, Singleton}
 import net.codingwell.scalaguice.ScalaModule
 
@@ -19,7 +19,7 @@ import scala.concurrent.ExecutionContext
 class ChassisModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {
     install(new ConfigModule)
-    install(new RouteModule)
+    install(new HttpModule)
     install(new HealthModule)
 
     bind[AkkaHttp].asEagerSingleton()
