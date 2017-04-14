@@ -2,12 +2,12 @@ package allawala.chassis.health.checks
 
 import java.io.File
 
-import com.codahale.metrics.health.HealthCheck
+import allawala.chassis.health.HealthCheckSupport
 
-private[health] class LowDiskSpaceHealthCheck extends HealthCheck {
+private[health] class LowDiskSpaceHealthCheck extends HealthCheckSupport {
   private val THRESHOLD = 10 * 1024 * 1024 // TODO specify in the config
 
-  override def check(): HealthCheck.Result = {
+  healthCheck(checkName) {
     import com.codahale.metrics.health.HealthCheck.Result
     val file = new File(".")
     val free = file.getFreeSpace
