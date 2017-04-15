@@ -8,7 +8,7 @@ import net.logstash.logback.stacktrace.ShortenedThrowableConverter
 
 // See http://www.solutionsiq.com/implementing-structured-logging-in-groovy/
 
-def logstashConfig = ConfigModule.getConfig().logstash()
+def logstashConfig = ConfigModule.getBaseConfig().logstash()
 def logstashEnabled = logstashConfig.enabled()
 def url = "${logstashConfig.httpConfig().host()}:${logstashConfig.httpConfig().port()}"
 

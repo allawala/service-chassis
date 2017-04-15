@@ -10,3 +10,4 @@
 - [11](https://github.com/allawala/service-chassis/issues/11) Expose life cycle events
 - [12](https://github.com/allawala/service-chassis/issues/12) Add versioning, packaging and deployment
 - [13](https://github.com/allawala/service-chassis/issues/13) Add a detailed health check endpoint
+- [14](https://github.com/allawala/service-chassis/issues/14) Make configuration extensible

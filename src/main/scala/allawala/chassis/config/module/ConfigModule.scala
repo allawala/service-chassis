@@ -1,18 +1,14 @@
 package allawala.chassis.config.module
 
-import allawala.chassis.config.model.{Configuration, Environment}
-import com.google.inject.{AbstractModule, Provider, Provides, Singleton}
-import com.typesafe.config.ConfigFactory
+import allawala.chassis.config.model.{BaseConfig, Environment}
+import com.google.inject.{AbstractModule, Provides, Singleton}
+import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus
 import net.ceedubs.ficus.readers.ArbitraryTypeReader
 import net.codingwell.scalaguice.ScalaModule
 
 class ConfigModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {}
-
-  def getConfigProvider: Provider[Configuration] = {
-    getProvider[Configuration]
-  }
 }
 
 object ConfigModule {
@@ -26,13 +22,19 @@ object ConfigModule {
    groovy configuration and calling getconfig directly would have loaded the configuration again.
   */
   private val environment = sys.env.get("ENV").flatMap(Environment.withNameInsensitiveOption).getOrElse(Local)
-  private val configuration = loadEnvConfiguration
+  private val config = loadEnvConfig
 
 
   @Provides
   @Singleton
-  def getConfig(): Configuration = {
-    configuration
+  def getBaseConfig(): BaseConfig = {
+    config.as[BaseConfig]("service.baseConfig")
+  }
+
+  @Provides
+  @Singleton
+  def getConfig(): Config = {
+    config
   }
 
   @Provides
@@ -41,7 +43,7 @@ object ConfigModule {
     environment
   }
 
-  private def loadEnvConfiguration = {
+  private def loadEnvConfig = {
     environment match {
       case Local => // Do nothing, load the default application.conf and logback.groovy
       case _ =>
@@ -49,6 +51,6 @@ object ConfigModule {
         sys.props("config.resource") = s"application.${environment.entryName}.conf"
     }
     ConfigFactory.invalidateCaches()
-    ConfigFactory.load().as[Configuration]("service")
+    ConfigFactory.load()
   }
 }

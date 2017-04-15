@@ -5,7 +5,7 @@ import javax.inject.Named
 import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
 import akka.stream.ActorMaterializer
-import allawala.chassis.config.model.Configuration
+import allawala.chassis.config.model.BaseConfig
 import allawala.chassis.config.module.ConfigModule
 import allawala.chassis.health.module.HealthModule
 import allawala.chassis.http.model.AkkaHttp
@@ -37,8 +37,8 @@ object ChassisModule {
 
   @Provides
   @Singleton
-  def getActorSystem(config: Configuration): ActorSystem = {
-    ActorSystem(config.name)
+  def getActorSystem(baseConfig: BaseConfig): ActorSystem = {
+    ActorSystem(baseConfig.name)
   }
 
   @Provides

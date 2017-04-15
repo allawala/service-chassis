@@ -7,7 +7,7 @@ import akka.event.LoggingAdapter
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import allawala.chassis.config.model.{Configuration, Environment}
+import allawala.chassis.config.model.{BaseConfig, Environment}
 import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
 
@@ -16,7 +16,7 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 class AkkaHttp @Inject()(
-                          val config: Configuration,
+                          val baseConfig: BaseConfig,
                           val routes: Routes,
                           val environment: Environment,
                           val logger: LoggingAdapter,
@@ -41,7 +41,7 @@ class AkkaHttp @Inject()(
   }
 
   private def bind() = {
-    Http().bindAndHandle(routes.route, config.httpConfig.host, config.httpConfig.port).onComplete {
+    Http().bindAndHandle(routes.route, baseConfig.httpConfig.host, baseConfig.httpConfig.port).onComplete {
 
       case Success(b) => {
         logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****.")
