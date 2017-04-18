@@ -78,4 +78,4 @@ appender("CONSOLE", ConsoleAppender) {
     }
 }
 
-root(INFO, appenders)
+root(DEBUG, appenders)

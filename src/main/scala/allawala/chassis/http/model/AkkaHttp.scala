@@ -8,11 +8,12 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import allawala.chassis.config.model.{BaseConfig, Environment}
+import allawala.chassis.core.exception.InitializationException
 import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class AkkaHttp @Inject()(
@@ -30,13 +31,21 @@ class AkkaHttp @Inject()(
   def run(): Unit = {
     implicit val timeout = Timeout(10.seconds)
 
-    val started: Seq[Future[Unit]] = lifecycleAwareRegistryProvider.get().get().map(_.preStart())
+    val started = lifecycleAwareRegistryProvider.get().get().map(_.preStart())
     Future.sequence(started).onComplete {
-      case Success(_) => bind()
+      case Success(results) =>
+        // Filter out all the valid results so that only the failed ones are in the sequence
+        val failed: Seq[Either[InitializationException, AnyRef]] = results.filter(_.isLeft)
+        if (failed.isEmpty) {
+          bind()
+        } else {
+          failed.map(_.left).map(_.get).foreach(ex => logger.error(ex, ex.getMessage))
+          logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] PRE START FAILURE ****")
+          actorSystem.terminate()
+        }
       case Failure(e) =>
         logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] PRE START FAILURE **** ")
         actorSystem.terminate()
-
     }
   }
 
