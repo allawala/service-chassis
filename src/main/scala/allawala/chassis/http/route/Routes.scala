@@ -12,9 +12,15 @@ class Routes @Inject()(val routeRegistryProvider : Provider[RouteRegistry]) exte
       }
   }
 
-  lazy val route: Route = correlationHeader { correlationId =>
-    routeRegistryProvider.get().get().map(_.route).fold[Route](baseRoute){ (z, i) =>
-      z ~ i
+  // IMPORTANT: The logRequestResult will log request/response entities as well, which may contain sensitive information
+  // TODO see if sensitive info for req/resp can be hidden via logger patterns or a loggable vs non loggable route is needed
+  lazy val route: Route = handleExceptions(myExceptionHandler) {
+    correlationHeader { correlationId =>
+      logRequestResult(correlationId) {
+        routeRegistryProvider.get().get().map(_.route).fold[Route](baseRoute){ (z, i) =>
+          z ~ i
+        }
+      }
     }
   }
 }

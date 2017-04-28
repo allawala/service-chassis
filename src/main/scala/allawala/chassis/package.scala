@@ -13,6 +13,4 @@ package object chassis {
   val Seq = scala.collection.immutable.Seq
 
   type IndexedSeq[+A] = scala.collection.immutable.IndexedSeq[A]
-
-  type DomainException = Exception
 }

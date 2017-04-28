@@ -68,7 +68,7 @@ libraryDependencies ++= {
     "nl.grons" %% "metrics-scala" % metricsVersion,
 
     // Test Dependencies
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test"
   )
 }
@@ -104,7 +104,7 @@ removeDangling := {
   if (deleted.isEmpty) {
     s.log.info("No dangling images to delete")
   } else {
-    s.log.info(s"Fhe following dangling images were deleted\n$deleted")
+    s.log.info(s"The following dangling images were deleted\n$deleted")
   }
 }
 

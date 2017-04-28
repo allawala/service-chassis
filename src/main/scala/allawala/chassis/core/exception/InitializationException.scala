@@ -1,10 +1,8 @@
 package allawala.chassis.core.exception
 
-import allawala.chassis.DomainException
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 
 trait InitializationException extends DomainException {
-  def message: String
-  def cause: Throwable
-  override def getMessage: String = message
-  override def getCause: Throwable = cause
+  override val statusCode: StatusCode = StatusCodes.InternalServerError
+  override val errorType: ErrorType = ErrorType.ServerError
 }

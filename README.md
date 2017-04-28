@@ -120,3 +120,6 @@ forward the logs to the elastic search server running on the `services` vagrant 
 `docker run -p 51515:51515 logstash -e 'input { tcp { port => 51515 codec => json_lines } } output { elasticsearch { hosts => ["192.168.1.10"]} }'`
 
 -e flag allows us to specify the configuration as part of the command
+
+## Extending the chassis
+Microservices wishing to extend the chassis MUST define the akka {} configuration again in the conf files

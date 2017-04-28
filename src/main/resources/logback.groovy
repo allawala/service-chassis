@@ -23,6 +23,7 @@ if (logstashEnabled) {
         destination = url
         encoder(LoggingEventCompositeJsonEncoder) {
             providers(LoggingEventJsonProviders) {
+                // TODO fix why timestamp is showing as a String in kibana
                 // local timestamp
                 timestamp(LoggingEventFormattedTimestampJsonProvider) {
                     fieldName = '@local-time'
