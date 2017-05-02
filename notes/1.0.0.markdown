@@ -11,3 +11,5 @@
 - [12](https://github.com/allawala/service-chassis/issues/12) Add versioning, packaging and deployment
 - [13](https://github.com/allawala/service-chassis/issues/13) Add a detailed health check endpoint
 - [14](https://github.com/allawala/service-chassis/issues/14) Make configuration extensible
+- [15](https://github.com/allawala/service-chassis/issues/15) Lifecycle events should return domain specific failures
+- [16](https://github.com/allawala/service-chassis/issues/16) Enhance exception hierarchy and error handling
