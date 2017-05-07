@@ -30,11 +30,14 @@ libraryDependencies ++= {
   val ficusVersion = "1.4.0"
   val groovyVersion = "2.4.10"
   val guiceVersion = "4.1.0"
+  val jwtCirceVersion = "0.12.1"
   val logbackVersion = "1.2.2"
   val logstashVersion = "4.9"
   val metricsVersion = "3.5.6_a2.4"
   val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
+  val slf4jVersion = "1.7.25"
+  val shiroVersion = "1.3.2"
 
   Seq(
     // Akka
@@ -55,7 +58,12 @@ libraryDependencies ++= {
     "io.circe" %% "circe-core" % circeVersion,
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
+    "io.circe" %% "circe-optics" % circeVersion,
+
     "de.heikoseeberger" %% "akka-http-circe" % akkaHttpCirceVersion excludeAll ExclusionRule(organization = "io.circe"),
+
+    // JWT
+    "com.pauldijou" %% "jwt-circe" % jwtCirceVersion,
 
     // Logging
     "org.codehaus.groovy" % "groovy-all" % groovyVersion, // To allow log config to be defined in groovy
@@ -63,9 +71,15 @@ libraryDependencies ++= {
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "net.logstash.logback" % "logstash-logback-encoder" % logstashVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
+    "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
+    "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
 
     // Metrics
     "nl.grons" %% "metrics-scala" % metricsVersion,
+
+    // Shiro
+    "org.apache.shiro" % "shiro-core" % shiroVersion,
+    "org.apache.shiro" % "shiro-guice" % shiroVersion,
 
     // Test Dependencies
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",

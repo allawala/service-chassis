@@ -31,6 +31,9 @@ Hence, make sure that these exists before every new release via sbt release.
 
 ** see details below
 
+## Extending the chassis
+Microservices wishing to extend the chassis MUST define the akka {} configuration again in the conf files
+
 ## Details
 
 The following sbt plugins are used 
@@ -121,5 +124,6 @@ forward the logs to the elastic search server running on the `services` vagrant 
 
 -e flag allows us to specify the configuration as part of the command
 
-## Extending the chassis
-Microservices wishing to extend the chassis MUST define the akka {} configuration again in the conf files
+## SHIRO
+Apache Shiro is used as the implement authentication and authorization.
+TODO: cover RSA signing, JWT auth, username password auth, remember me tokens

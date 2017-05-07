@@ -13,3 +13,4 @@
 - [14](https://github.com/allawala/service-chassis/issues/14) Make configuration extensible
 - [15](https://github.com/allawala/service-chassis/issues/15) Lifecycle events should return domain specific failures
 - [16](https://github.com/allawala/service-chassis/issues/16) Enhance exception hierarchy and error handling
+- [17](https://github.com/allawala/service-chassis/issues/17) Add Shiro based authentication and authorization

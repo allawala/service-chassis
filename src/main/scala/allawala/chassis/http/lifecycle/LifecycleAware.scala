@@ -9,5 +9,5 @@ trait LifecycleAware {
     perform actions to be performed before the http server is bound and starts listening for incoming requests
     This should avoid performing any long running operations
    */
-  def preStart(): Future[Either[InitializationException, AnyRef]]
+  def preStart(): Future[Either[InitializationException, Unit]]
 }

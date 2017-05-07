@@ -3,8 +3,10 @@ package allawala.chassis.http.route
 import java.util.UUID
 
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.{Directive1, ExceptionHandler}
+import akka.http.scaladsl.server._
+import allawala.chassis.auth.exception.AuthenticationException
 import allawala.chassis.core.exception.{DomainException, UnexpectedException}
+import org.apache.shiro.authc.{AuthenticationException => ShiroAuthenticationException}
 import org.slf4j.MDC
 
 trait RouteWrapper extends RouteSupport {
@@ -25,9 +27,15 @@ trait RouteWrapper extends RouteSupport {
           logError(request, ue)
           complete(BadRequest -> ue.toErrorEnvelope(MDC.get(XCorrelationId)))
         }
+      case e: ShiroAuthenticationException =>
+        extractRequest { request =>
+          val ae = AuthenticationException(message = e.getMessage, cause = e)
+          logError(request, ae)
+          complete(Forbidden -> ae.toErrorEnvelope(MDC.get(XCorrelationId)))
+        }
       case e: Exception =>
         extractRequest { request =>
-          val ue = UnexpectedException(errorCode = "invalid.request", e)
+          val ue = UnexpectedException(cause = e)
           logError(request, ue)
           complete(InternalServerError -> ue.toErrorEnvelope(MDC.get(XCorrelationId)))
         }

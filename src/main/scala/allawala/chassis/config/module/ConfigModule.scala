@@ -1,6 +1,6 @@
 package allawala.chassis.config.module
 
-import allawala.chassis.config.model.{BaseConfig, Environment}
+import allawala.chassis.config.model.{Auth, BaseConfig, Environment}
 import com.google.inject.{AbstractModule, Provides, Singleton}
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus
@@ -41,6 +41,12 @@ object ConfigModule {
   @Singleton
   def getEnvironment(): Environment = {
     environment
+  }
+
+  @Provides
+  @Singleton
+  def getAuth(config: BaseConfig): Auth = {
+    config.auth
   }
 
   private def loadEnvConfig = {

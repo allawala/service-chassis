@@ -5,6 +5,7 @@ import javax.inject.Named
 import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
 import akka.stream.ActorMaterializer
+import allawala.chassis.auth.module.AuthModule
 import allawala.chassis.config.model.BaseConfig
 import allawala.chassis.config.module.ConfigModule
 import allawala.chassis.health.module.HealthModule

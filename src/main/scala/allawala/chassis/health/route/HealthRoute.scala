@@ -11,20 +11,17 @@ import io.circe.generic.auto._
 import scala.collection.JavaConverters._
 
 /*
-  Injecting the default dispatcher ec. If any of the checks need to do any blocking operations, this should be changed to the
-  blocking dispatcher
-
   NOTE: BuildInfo object is generated on compilation so standalone sbt clean will cause IDE to show errors
  */
 class HealthRoute extends HasRoute with RouteSupport with HealthCheckSupport {
 
-  lazy val route: Route = get {
+  override def route: Route = get {
     path("health") {
       checkHealth()
     } ~
       path("health" / "details") {
         checkHealth(true)
-    }
+      }
   }
 
   private def checkHealth(detailed: Boolean = false) = {

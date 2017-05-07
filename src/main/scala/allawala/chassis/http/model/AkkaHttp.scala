@@ -35,7 +35,7 @@ class AkkaHttp @Inject()(
     Future.sequence(started).onComplete {
       case Success(results) =>
         // Filter out all the valid results so that only the failed ones are in the sequence
-        val failed: Seq[Either[InitializationException, AnyRef]] = results.filter(_.isLeft)
+        val failed: Seq[Either[InitializationException, Unit]] = results.filter(_.isLeft)
         if (failed.isEmpty) {
           bind()
         } else {
