@@ -82,9 +82,9 @@ trait RouteSecurity extends Directives with StrictLogging {
 
   // TODO set refresh token
   def authenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive1[Subject] = {
-    // TODO get the uuid. i guess from the subject principal
-    val token = authService.generateToken(JWTSubject(PrincipalType.User, "uuid", password))
     val subject = authService.authenticateCredentials(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))
+    val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
+    val token = authService.generateToken(JWTSubject(PrincipalType.User, primaryPrincipal, password))
     setAuthorizationHeader(token) & provide(subject)
   }
 }

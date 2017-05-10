@@ -18,6 +18,9 @@ class UsernamePasswordRealm extends AuthorizingRealm {
     }
   }
 
+  /*
+    This sets the email/username as the principal, however it might be more useful to set the uuid as the principal
+   */
   override def doGetAuthenticationInfo(authenticationToken: AuthenticationToken): AuthenticationInfo = {
     val token = authenticationToken.asInstanceOf[UsernamePasswordToken]
     new SimpleAccount(token.getPrincipal, token.getCredentials, getName)
