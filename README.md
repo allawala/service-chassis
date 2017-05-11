@@ -19,6 +19,8 @@ see [git-commit](https://chris.beams.io/posts/git-commit/) for an acceptable com
 `sbt removeDangling`
 - release **
 `sbt release`
+- publish to s3
+`sbt publish`
 - generate dependency graph
 `sbt dependencyTree`
 - run local docker image
@@ -86,6 +88,9 @@ The following sbt plugins are used
     
     see [scalastyle-github](http://www.scalastyle.org/) for details
 
+- s3 Resolver [fm-sbt-s3-resolver](https://github.com/frugalmechanic/fm-sbt-s3-resolver)
+    s3 will be used to host the snapshot and release jars
+    
 ## Vagrant
 Vagrantfile is defined in the project's root folder.
 

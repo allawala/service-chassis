@@ -100,9 +100,15 @@ buildInfoOptions += BuildInfoOption.BuildTime
 git.useGitDescribe := true
 git.baseVersion := "1.0.0"
 
-// TODO if dependent projects can reference directly from github, no need, else update to publish to a public maven repo
 // publish info
-publishTo := Some("temp" at "file:///tmp/repository")
+publishMavenStyle := true
+publishTo := {
+  if (version.value.endsWith("SNAPSHOT")) {
+    Some("Service Chassis Snapshots" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/service-chassis/snapshots")
+  } else {
+    Some("Service Chassis Snapshots" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/service-chassis/releases")
+  }
+}
 
 lazy val removeDangling = taskKey[Unit]("Task to clean up dangling docker images")
 
@@ -210,6 +216,14 @@ releaseProcess := Seq(
   commitNextVersion,
   pushChanges
 )
+
+mappings in (Compile, packageBin) ~= { seq =>
+  seq.filter{
+    case (file, _) =>
+      val fileName = file.getName
+      !(fileName.equalsIgnoreCase("logback.groovy") || fileName.startsWith("BuildInfo"))
+  }
+}
 
 // Dependency tree
 dependencyDotFile := file("dependencies.dot") //render dot file to `./dependencies.dot`
