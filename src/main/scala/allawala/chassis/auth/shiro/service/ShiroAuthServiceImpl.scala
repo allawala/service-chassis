@@ -6,9 +6,9 @@ import javax.inject.{Inject, Named}
 import allawala.chassis.auth.service.RefreshTokenService
 import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, JWTSubject, PrincipalType}
 import allawala.chassis.config.model.Auth
+import allawala.chassis.core.exception.ServerException
 import io.circe.Json
 import io.circe.parser._
-import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authc.{AuthenticationException, AuthenticationToken, UsernamePasswordToken}
 import org.apache.shiro.subject.Subject
 import pdi.jwt.exceptions.JwtExpirationException
@@ -104,7 +104,14 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
   }
 
   private def authenticateToken(authToken: AuthenticationToken) = {
-    val subject = SecurityUtils.getSubject
+    val subject = (new Subject.Builder).buildSubject
+    /*
+      This guard is purely for sanity in case there is some shiro internal logic that I have missed that still depends on
+      thread local context. To be removed after some load testing that will cause the same dispatcher thread to be used again.
+     */
+    if (subject.isAuthenticated) {
+      throw ServerException(message = "subject pre-authenticated, possible thread context issue")
+    }
     subject.login(authToken)
     subject
   }
