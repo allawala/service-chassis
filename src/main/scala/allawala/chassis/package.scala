@@ -3,7 +3,7 @@ package allawala
 package object chassis {
   /*
     Seq is not aliased to immutable by default like the other collection types,
-    http://hseeberger.github.io/blog/2013/10/25/attention-seq-is-not-immutable/
+    https://hseeberger.wordpress.com/2013/10/25/attention-seq-is-not-immutable/
   */
   type Traversable[+A] = scala.collection.immutable.Traversable[A]
 

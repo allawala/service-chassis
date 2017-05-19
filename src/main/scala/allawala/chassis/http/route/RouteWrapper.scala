@@ -33,6 +33,9 @@ trait RouteWrapper extends RouteSupport {
           logError(request, ae)
           complete(Forbidden -> ae.toErrorEnvelope(MDC.get(XCorrelationId)))
         }
+      case e: NoSuchElementException =>
+        // For akka http cors. Ignore logging
+        complete(NotFound -> e.getMessage)
       case e: Exception =>
         extractRequest { request =>
           val ue = UnexpectedException(cause = e)

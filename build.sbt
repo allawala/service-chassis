@@ -23,6 +23,7 @@ scalacOptions ++= Seq(
 
 libraryDependencies ++= {
   val akkaVersion = "2.4.17"
+  val akkaHttpCorsVersion = "0.2.1"
   val akkaHttpVersion = "10.0.5"
   val akkaHttpCirceVersion = "1.13.0"
   val circeVersion = "0.7.0"
@@ -42,6 +43,7 @@ libraryDependencies ++= {
   Seq(
     // Akka
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
+    "ch.megard" %% "akka-http-cors" % akkaHttpCorsVersion,
 
     // Config
     "com.iheart" %% "ficus" % ficusVersion,
