@@ -25,7 +25,7 @@ trait ValidateUnexpected {
 
 trait ValidateNotBlank {
   protected def notBlank(name: String, value: String): ValidatedNel[ValidationError, String] =
-    if (value.isEmpty) Invalid(NonEmptyList.of(NotBlank(name))) else Valid(value)
+    if (value.trim.isEmpty) Invalid(NonEmptyList.of(NotBlank(name))) else Valid(value)
 
   protected def notBlank(name: String, value: Option[String]): ValidatedNel[ValidationError, Option[String]] = value match {
     case Some(v) => notBlank(name, v).map(_ => value)
@@ -35,7 +35,7 @@ trait ValidateNotBlank {
 
 trait ValidateMinLength {
   protected def minLength(name: String, value: String, min: Int): ValidatedNel[ValidationError, String] =
-    if (value.length < min) Invalid(NonEmptyList.of(MinLength(name, min))) else Valid(value)
+    if (value.trim.length < min) Invalid(NonEmptyList.of(MinLength(name, min))) else Valid(value)
 
   protected def minLength(name: String, value: Option[String], min: Int): ValidatedNel[ValidationError, Option[String]] = value match {
     case Some(v) => minLength(name, v, min).map(_ => value)
@@ -45,7 +45,7 @@ trait ValidateMinLength {
 
 trait ValidateMaxLength {
   protected def maxLength(name: String, value: String, max: Int): ValidatedNel[ValidationError, String] =
-    if (value.length > max) Invalid(NonEmptyList.of(MaxLength(name, max))) else Valid(value)
+    if (value.trim.length > max) Invalid(NonEmptyList.of(MaxLength(name, max))) else Valid(value)
 
   protected def maxLength(name: String, value: Option[String], max: Int): ValidatedNel[ValidationError, Option[String]] = value match {
     case Some(v) => maxLength(name, v, max).map(_ => value)
