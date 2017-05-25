@@ -8,6 +8,7 @@ import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
 
 trait CorsSupport extends Directives {
+  private val AllOrigins = "*"
   def allowedOrigins: Seq[String]
 
   /*
@@ -27,8 +28,15 @@ trait CorsSupport extends Directives {
       }
     }.result().withFallback(RejectionHandler.default)
 
+  private lazy val httpOriginRange = {
+    allowedOrigins.find(_.trim == AllOrigins) match {
+      case Some(_) => HttpOriginRange.*
+      case None => HttpOriginRange(allowedOrigins.map(HttpOrigin(_)): _*)
+    }
+  }
+
   lazy val corsSettings: CorsSettings.Default = CorsSettings.defaultSettings.copy(
-    allowedOrigins = HttpOriginRange(allowedOrigins.map(HttpOrigin(_)): _*),
+    allowedOrigins = httpOriginRange,
     allowedMethods = scala.collection.immutable.Seq(OPTIONS, POST, PUT, GET, DELETE)
   )
 
