@@ -24,7 +24,11 @@ object JwtTokenGenerator extends StrictLogging {
     import ArbitraryTypeReader._
     import Ficus._
 
-    val file =  s"application.${environment.entryName}.conf"
+    val file =  environment match {
+      case Environment.Local => "application.conf"
+      case _ => s"application.${environment.entryName}.conf"
+    }
+
     val config = ConfigFactory.load(file)
     val auth = config.as[Auth]("service.baseConfig.auth")
     val authService = new ShiroAuthServiceImpl(auth, new NoOpRefreshTokenService)(ExecutionContext.global)
