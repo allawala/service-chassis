@@ -9,17 +9,16 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.util.io.pem.{PemObject, PemWriter}
 
 /*
-  Utility class to generate a public/private key pair files in the user home directory. To run just extend App and run.
-  Once done, revert the changes so that sbt run does not prompt the user to pick a main class to run
+  Utility class to generate a public/private key pair files in the user home directory.
+   To run, call RSAKeyGenerator.generate()
  */
 object RSAKeyGenerator extends StrictLogging {
   private val KeySize = 2048
   private val homeDir = System.getProperty("user.home")
 
   Security.addProvider(new BouncyCastleProvider)
-  generate()
 
-  class PemFile(val key: Key, val description: String) {
+  private class PemFile(val key: Key, val description: String) {
     private val pemObject = new PemObject(description, key.getEncoded)
 
     def write(file: File): Unit = {
@@ -48,7 +47,7 @@ object RSAKeyGenerator extends StrictLogging {
     logger.debug(s"Writing $description to $path/$filename")
   }
 
-  private def generate(): Unit = {
+  def generate(): Unit = {
     val keyPair = generateKeyPair()
     val privateKey = keyPair.getPrivate
     val publicKey = keyPair.getPublic

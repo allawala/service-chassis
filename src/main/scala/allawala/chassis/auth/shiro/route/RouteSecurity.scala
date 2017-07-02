@@ -84,7 +84,7 @@ trait RouteSecurity extends Directives with StrictLogging {
   def authenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive1[Subject] = {
     val subject = authService.authenticateCredentials(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))
     val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
-    val token = authService.generateToken(JWTSubject(PrincipalType.User, primaryPrincipal, password))
+    val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
     setAuthorizationHeader(token) & provide(subject)
   }
 }

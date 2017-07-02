@@ -1,6 +1,7 @@
 package allawala.chassis.auth.shiro.service
 
-import java.time.Instant
+import java.time.{Duration, Instant}
+import java.time.temporal.TemporalAmount
 import javax.inject.{Inject, Named}
 
 import allawala.chassis.auth.service.RefreshTokenService
@@ -21,15 +22,18 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
                                     (@Named("blocking-fixed-pool-dispatcher") implicit val ec: ExecutionContext)
   extends ShiroAuthService {
 
-  // TODO get expiration from the config
-  override def generateToken(principal: JWTSubject): String = {
+  override def generateToken(
+                              principalType: PrincipalType,
+                              principal: String,
+                              expiresIn: TemporalAmount
+                            ): String = {
     val Right(claimJson) = parse(
       s"""
          |{
          |"iat":${Instant.now.getEpochSecond},
-         |"exp":${Instant.now.plusSeconds(600).getEpochSecond},
-         |"sub":"${principal.principal}",
-         |"typ":"${principal.principalType.entryName}",
+         |"exp":${Instant.now.plus(expiresIn).getEpochSecond},
+         |"sub":"$principal",
+         |"typ":"${principalType.entryName}",
          |"rnd":${Instant.now.toEpochMilli}
          |}
          |""".stripMargin
@@ -55,7 +59,7 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
         JWTSubject(PrincipalType.withName(typ), sub, token)
       case Failure(e) =>
         e match {
-          case _:JwtExpirationException if refreshToken.isDefined =>
+          case _: JwtExpirationException if refreshToken.isDefined =>
             decodeSelectorAndToken(refreshToken.get) match {
               case Some((selector, tok)) =>
                 refreshTokenService.lookup(selector) match {
@@ -66,7 +70,7 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
                         .toEither
                     val (typ, sub) = getSubjectDetails(json)
                     val subject = JWTSubject(PrincipalType.withName(typ), sub, token)
-                    val newToken = generateToken(subject)
+                    val newToken = generateToken(subject.principalType, subject.principal)
                     subject.copy(credentials = newToken)
                   case None => throw new AuthenticationException("Refresh token not found", e)
                 }
