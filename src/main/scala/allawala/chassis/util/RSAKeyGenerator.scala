@@ -16,8 +16,6 @@ object RSAKeyGenerator extends StrictLogging {
   private val KeySize = 2048
   private val homeDir = System.getProperty("user.home")
 
-  Security.addProvider(new BouncyCastleProvider)
-
   private class PemFile(val key: Key, val description: String) {
     private val pemObject = new PemObject(description, key.getEncoded)
 
@@ -48,6 +46,8 @@ object RSAKeyGenerator extends StrictLogging {
   }
 
   def generate(): Unit = {
+    Security.addProvider(new BouncyCastleProvider)
+
     val keyPair = generateKeyPair()
     val privateKey = keyPair.getPrivate
     val publicKey = keyPair.getPublic
