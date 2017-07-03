@@ -19,7 +19,7 @@ trait RouteWrapper extends RouteSupport {
       case e: DomainException =>
         extractRequest { request =>
           logError(request, e)
-          complete(BadRequest -> e.toErrorEnvelope(MDC.get(XCorrelationId)))
+          complete(e.statusCode -> e.toErrorEnvelope(MDC.get(XCorrelationId)))
         }
       case e: IllegalArgumentException =>
         extractRequest { request =>
@@ -31,7 +31,7 @@ trait RouteWrapper extends RouteSupport {
         extractRequest { request =>
           val ae = AuthenticationException(message = e.getMessage, cause = e)
           logError(request, ae)
-          complete(Forbidden -> ae.toErrorEnvelope(MDC.get(XCorrelationId)))
+          complete(ae.statusCode -> ae.toErrorEnvelope(MDC.get(XCorrelationId)))
         }
       case e: NoSuchElementException =>
         // For akka http cors. Ignore logging

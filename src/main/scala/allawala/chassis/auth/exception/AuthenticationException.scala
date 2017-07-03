@@ -12,7 +12,7 @@ case class AuthenticationException (
                               ) extends DomainException {
 
   override val errorType: ErrorType = ErrorType.AccessDeniedError
-  override val statusCode: StatusCode = StatusCodes.Forbidden
+  override val statusCode: StatusCode = StatusCodes.Unauthorized
 
 }
 
