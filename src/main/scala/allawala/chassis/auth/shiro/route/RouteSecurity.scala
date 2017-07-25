@@ -3,7 +3,7 @@ package allawala.chassis.auth.shiro.route
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.{Directive0, Directive1, Directives}
 import allawala.chassis.auth.exception.{AuthenticationException, AuthorizationException}
-import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, JWTSubject, PrincipalType}
+import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, PrincipalType}
 import allawala.chassis.auth.shiro.service.ShiroAuthService
 import com.typesafe.scalalogging.StrictLogging
 import org.apache.shiro.authc.UsernamePasswordToken

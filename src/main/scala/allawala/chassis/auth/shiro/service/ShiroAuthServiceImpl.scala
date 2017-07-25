@@ -1,6 +1,6 @@
 package allawala.chassis.auth.shiro.service
 
-import java.time.{Duration, Instant}
+import java.time.Instant
 import java.time.temporal.TemporalAmount
 import javax.inject.{Inject, Named}
 

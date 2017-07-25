@@ -27,8 +27,8 @@ class UsernamePasswordRealm extends AuthorizingRealm {
   }
 
   override def doGetAuthorizationInfo(principals: PrincipalCollection): AuthorizationInfo = {
-    var roleNames = Set.empty[String]
-    var permissions = Set.empty[String]
+    val roleNames = Set.empty[String]
+    val permissions = Set.empty[String]
 
     val info = new SimpleAuthorizationInfo(roleNames.asJava)
     info.setStringPermissions(permissions.asJava)

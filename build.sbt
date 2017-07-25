@@ -2,7 +2,7 @@ name := """service-chassis"""
 
 organization := "allawala"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.2"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -26,19 +26,20 @@ libraryDependencies ++= {
   val akkaHttpCorsVersion = "0.2.1"
   val akkaHttpVersion = "10.0.9"
   val akkaHttpCirceVersion = "1.13.0"
-  val circeVersion = "0.7.0"
-  val enumeratumVersion = "1.5.10"
+  val circeVersion = "0.8.0"
+  val enumeratumVersion = "1.5.12"
+  val enumeratumCirceVersion = "1.5.14"
   val ficusVersion = "1.4.0"
   val groovyVersion = "2.4.10"
   val guiceVersion = "4.1.0"
-  val jwtCirceVersion = "0.12.1"
+  val jwtCirceVersion = "0.14.0"
   val logbackVersion = "1.2.2"
   val logstashVersion = "4.9"
   val metricsVersion = "3.5.6_a2.4"
   val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
   val slf4jVersion = "1.7.25"
-  val shiroVersion = "1.3.2"
+  val shiroVersion = "1.4.0"
 
   Seq(
     // Akka
@@ -54,7 +55,7 @@ libraryDependencies ++= {
 
     // Enums
     "com.beachape" %% "enumeratum" % enumeratumVersion,
-    "com.beachape" %% "enumeratum-circe" % enumeratumVersion,
+    "com.beachape" %% "enumeratum-circe" % enumeratumCirceVersion,
 
     // Json
     "io.circe" %% "circe-core" % circeVersion,

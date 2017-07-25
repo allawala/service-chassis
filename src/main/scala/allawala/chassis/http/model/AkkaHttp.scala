@@ -6,13 +6,11 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import akka.util.Timeout
 import allawala.chassis.config.model.{BaseConfig, Environment}
 import allawala.chassis.core.exception.InitializationException
 import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
 
-import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -29,8 +27,6 @@ class AkkaHttp @Inject()(
                         ) {
 
   def run(): Unit = {
-    implicit val timeout = Timeout(10.seconds)
-
     val started = lifecycleAwareRegistryProvider.get().get().map(_.preStart())
     Future.sequence(started).onComplete {
       case Success(results) =>
