@@ -8,7 +8,7 @@ import net.logstash.logback.stacktrace.ShortenedThrowableConverter
 
 // See http://www.solutionsiq.com/implementing-structured-logging-in-groovy/
 
-def logstashConfig = ConfigModule.getConfig().logstash()
+def logstashConfig = ConfigModule.getBaseConfig().logstash()
 def logstashEnabled = logstashConfig.enabled()
 def url = "${logstashConfig.httpConfig().host()}:${logstashConfig.httpConfig().port()}"
 
@@ -23,6 +23,7 @@ if (logstashEnabled) {
         destination = url
         encoder(LoggingEventCompositeJsonEncoder) {
             providers(LoggingEventJsonProviders) {
+                // TODO fix why timestamp is showing as a String in kibana
                 // local timestamp
                 timestamp(LoggingEventFormattedTimestampJsonProvider) {
                     fieldName = '@local-time'
@@ -78,4 +79,4 @@ appender("CONSOLE", ConsoleAppender) {
     }
 }
 
-root(INFO, appenders)
+root(DEBUG, appenders)

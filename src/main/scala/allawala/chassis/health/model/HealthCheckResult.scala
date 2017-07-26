@@ -1,3 +1,3 @@
 package allawala.chassis.health.model
 
-case class HealthCheckResult(healthy: Boolean, message: String, timestamp: String)
+case class HealthCheckResult(isHealthy: Boolean, message: String, timestamp: String)

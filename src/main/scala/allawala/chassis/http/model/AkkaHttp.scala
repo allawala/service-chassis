@@ -1,24 +1,25 @@
 package allawala.chassis.http.model
 
-import javax.inject.{Inject, Named}
+import javax.inject.{Inject, Named, Provider}
 
 import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import akka.util.Timeout
-import allawala.chassis.config.model.{Configuration, Environment}
+import allawala.chassis.config.model.{BaseConfig, Environment}
+import allawala.chassis.core.exception.InitializationException
+import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class AkkaHttp @Inject()(
-                          val config: Configuration,
+                          val baseConfig: BaseConfig,
                           val routes: Routes,
                           val environment: Environment,
-                          val logger: LoggingAdapter
+                          val logger: LoggingAdapter,
+                          val lifecycleAwareRegistryProvider : Provider[LifecycleAwareRegistry]
                         )(
                           implicit val actorSystem: ActorSystem,
                           implicit val actorMaterializer: ActorMaterializer,
@@ -26,8 +27,26 @@ class AkkaHttp @Inject()(
                         ) {
 
   def run(): Unit = {
-    implicit val timeout = Timeout(10.seconds)
-    Http().bindAndHandle(routes.route, config.httpConfig.host, config.httpConfig.port).onComplete {
+    val started = lifecycleAwareRegistryProvider.get().get().map(_.preStart())
+    Future.sequence(started).onComplete {
+      case Success(results) =>
+        // Filter out all the valid results so that only the failed ones are in the sequence
+        val failed: Seq[Either[InitializationException, Unit]] = results.filter(_.isLeft)
+        if (failed.isEmpty) {
+          bind()
+        } else {
+          failed.map(_.left).map(_.get).foreach(ex => logger.error(ex, ex.getMessage))
+          logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] PRE START FAILURE ****")
+          actorSystem.terminate()
+        }
+      case Failure(e) =>
+        logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] PRE START FAILURE **** ")
+        actorSystem.terminate()
+    }
+  }
+
+  private def bind() = {
+    Http().bindAndHandle(routes.route, baseConfig.httpConfig.host, baseConfig.httpConfig.port).onComplete {
 
       case Success(b) => {
         logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****.")
@@ -41,7 +60,6 @@ class AkkaHttp @Inject()(
         logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] FAILED TO START **** ")
         actorSystem.terminate()
     }
-
   }
 
   private def printLogbackConfig() = {

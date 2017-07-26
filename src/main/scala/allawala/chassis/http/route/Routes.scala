@@ -2,20 +2,34 @@ package allawala.chassis.http.route
 
 import javax.inject.{Inject, Provider}
 
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.Route
-import allawala.chassis.http.model.RouteRegistry
+import akka.http.scaladsl.server.{Directive, Route}
+import allawala.chassis.config.model.CorsConfig
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
-class Routes @Inject()(val routeRegistryProvider : Provider[RouteRegistry]) extends RouteWrapper {
-  private val baseRoute = get {
-      pathSingleSlash {
-        complete { NotFound }
+class Routes @Inject()(
+                        val securityManager: SecurityManager,
+                        val routeRegistryProvider: Provider[RouteRegistry],
+                        val corsConfig: CorsConfig
+                      ) extends RouteWrapper with CorsSupport {
+
+  override val allowedOrigins: Seq[String] = corsConfig.allowedOrigins
+
+  lazy val handleErrors: Directive[Unit] = handleRejections(rejectionHandler) & handleExceptions(myExceptionHandler)
+
+  // IMPORTANT: The logRequestResult will log request/response entities as well, which may contain sensitive information
+  // TODO see if sensitive info for req/resp can be hidden via logger patterns or a loggable vs non loggable route is needed
+  // See https://github.com/lomigmegard/akka-http-cors
+  lazy val route: Route = handleErrors {
+    cors(corsSettings) {
+      handleErrors {
+        correlationHeader { correlationId =>
+          logRequestResult(correlationId) {
+            routeRegistryProvider.get().get().map(_.route).reduce[Route] { (z, i) =>
+              z ~ i
+            }
+          }
+        }
       }
-  }
-
-  lazy val route: Route = correlationHeader { correlationId =>
-    routeRegistryProvider.get().getRoutes().fold[Route](baseRoute){ (z, i) =>
-      z ~ i
     }
   }
 }
