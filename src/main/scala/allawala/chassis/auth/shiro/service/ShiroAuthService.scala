@@ -18,8 +18,14 @@ trait ShiroAuthService {
   def authenticate(authToken: JWTAuthenticationToken): Subject
   def authenticateAsync(authToken: JWTAuthenticationToken): Future[Subject]
 
-  def isAuthorized(permission: String, subject: Subject): Boolean
-  def isAuthorizedAsync(permission: String, subject: Subject): Future[Boolean]
+  def isAuthorized(subject: Subject, permission: String): Boolean
+  def isAuthorizedAsync(subject: Subject, permission: String): Future[Boolean]
+
+  def isAuthorizedAny(subject: Subject, permissions: Seq[String]): Boolean
+  def isAuthorizedAnyAsync(subject: Subject, permissions: Seq[String]): Future[Boolean]
+
+  def isAuthorizedAll(subject: Subject, permissions: Seq[String]): Boolean
+  def isAuthorizedAllAsync(subject: Subject, permissions: Seq[String]): Future[Boolean]
 
   def authenticateCredentials(authToken: UsernamePasswordToken): Subject
   def authenticateCredentialsAsync(authToken: UsernamePasswordToken): Future[Subject]

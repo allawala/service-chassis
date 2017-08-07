@@ -68,13 +68,37 @@ trait RouteSecurity extends Directives with StrictLogging {
   }
 
   // TODO see if this can be converted to a Directive0
-  def authorized(permission: String, subject: Subject): Directive1[Boolean] = {
-    if (!authService.isAuthorized(permission, subject)) throw AuthorizationException(message = "unauthorized")
+  def authorized(subject: Subject, permission: String): Directive1[Boolean] = {
+    if (!authService.isAuthorized(subject, permission)) throw AuthorizationException(message = "unauthorized")
     provide(true)
   }
 
-  def onAuthorized(permission: String, subject: Subject): Directive1[Boolean] = {
-    onSuccess(authService.isAuthorizedAsync(permission, subject)).flatMap { authorized =>
+  def onAuthorized(subject: Subject, permission: String): Directive1[Boolean] = {
+    onSuccess(authService.isAuthorizedAsync(subject, permission)).flatMap { authorized =>
+      if (!authorized) throw AuthorizationException(message = "unauthorized")
+      provide(true)
+    }
+  }
+
+  def authorizedAny(subject: Subject, permissions: String*): Directive1[Boolean] = {
+    if (!authService.isAuthorizedAny(subject, permissions)) throw AuthorizationException(message = "unauthorized")
+    provide(true)
+  }
+
+  def onAuthorizedAny(subject: Subject, permissions: String*): Directive1[Boolean] = {
+    onSuccess(authService.isAuthorizedAnyAsync(subject, permissions)).flatMap { authorized =>
+      if (!authorized) throw AuthorizationException(message = "unauthorized")
+      provide(true)
+    }
+  }
+
+  def authorizedAll(subject: Subject, permissions: String*): Directive1[Boolean] = {
+    if (!authService.isAuthorizedAll(subject, permissions)) throw AuthorizationException(message = "unauthorized")
+    provide(true)
+  }
+
+  def onAuthorizedAll(subject: Subject, permissions: String*): Directive1[Boolean] = {
+    onSuccess(authService.isAuthorizedAllAsync(subject, permissions)).flatMap { authorized =>
       if (!authorized) throw AuthorizationException(message = "unauthorized")
       provide(true)
     }
