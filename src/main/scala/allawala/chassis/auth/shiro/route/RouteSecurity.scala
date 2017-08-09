@@ -9,6 +9,8 @@ import com.typesafe.scalalogging.StrictLogging
 import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.subject.Subject
 
+import scala.util.{Failure, Success, Try}
+
 trait RouteSecurity extends Directives with StrictLogging {
   val Authorization = "Authorization"
   val RefreshToken = "Refresh-Token"
@@ -110,5 +112,45 @@ trait RouteSecurity extends Directives with StrictLogging {
     val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
     val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
     setAuthorizationHeader(token) & provide(subject)
+  }
+
+  // TODO set refresh token
+  def onAuthenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive1[Subject] = {
+    onSuccess(authService.authenticateCredentialsAsync(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))).flatMap { subject =>
+      val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
+      val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
+      setAuthorizationHeader(token) & provide(subject)
+    }
+  }
+
+  /*
+    variant of authenticate that allows the caller to perform some action on failure for instance, update login attempt count.
+   */
+  // TODO set refresh token
+  def authenticate(user: String, password: String, rememberMe: Option[Boolean], onFailure: => Unit): Directive1[Subject] = {
+    Try {
+      val subject = authService.authenticateCredentials(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))
+      val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
+      val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
+      setAuthorizationHeader(token) & provide(subject)
+    } match {
+      case Success(result) => result
+      case Failure(e) =>
+        onFailure
+        throw e
+    }
+  }
+
+  // TODO set refresh token
+  def onAuthenticate(user: String, password: String, rememberMe: Option[Boolean], onFailure: => Unit): Directive1[Subject] = {
+    onComplete(authService.authenticateCredentialsAsync(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))).flatMap {
+      case Success(subject) =>
+        val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
+        val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
+        setAuthorizationHeader(token) & provide(subject)
+      case Failure(e) =>
+        onFailure
+        throw e
+    }
   }
 }

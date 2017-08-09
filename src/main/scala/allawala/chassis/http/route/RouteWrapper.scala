@@ -31,7 +31,8 @@ trait RouteWrapper extends RouteSupport {
         extractRequest { request =>
           val ae = AuthenticationException(message = e.getMessage, cause = e)
           logError(request, ae)
-          complete(ae.statusCode -> ae.toErrorEnvelope(MDC.get(XCorrelationId)))
+          // We do not want to expose the actual reason behind the authenticaion failure, we just need to log it
+          complete(ae.statusCode -> ae.copy(message = "authentication failure").toErrorEnvelope(MDC.get(XCorrelationId)))
         }
       case e: NoSuchElementException =>
         // For akka http cors. Ignore logging
