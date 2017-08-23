@@ -1,7 +1,7 @@
 package allawala.chassis.auth.shiro.route
 
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.server.{Directive0, Directive1, Directives}
+import akka.http.scaladsl.server.{Directive, Directive0, Directive1, Directives}
 import allawala.chassis.auth.exception.{AuthenticationException, AuthorizationException}
 import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, PrincipalType}
 import allawala.chassis.auth.shiro.service.ShiroAuthService
@@ -15,6 +15,7 @@ trait RouteSecurity extends Directives with StrictLogging {
   val Authorization = "Authorization"
   val RefreshToken = "Refresh-Token"
   val Bearer = "Bearer"
+  type Directive2[T, U] = Directive[Tuple2[T, U]]
 
   def authService: ShiroAuthService
 
@@ -107,19 +108,19 @@ trait RouteSecurity extends Directives with StrictLogging {
   }
 
   // TODO set refresh token
-  def authenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive1[Subject] = {
+  def authenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive2[Subject, String] = {
     val subject = authService.authenticateCredentials(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))
     val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
     val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
-    setAuthorizationHeader(token) & provide(subject)
+    setAuthorizationHeader(token) & tprovide((subject, token))
   }
 
   // TODO set refresh token
-  def onAuthenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive1[Subject] = {
+  def onAuthenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive2[Subject, String] = {
     onSuccess(authService.authenticateCredentialsAsync(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))).flatMap { subject =>
       val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
       val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
-      setAuthorizationHeader(token) & provide(subject)
+      setAuthorizationHeader(token) & tprovide((subject, token))
     }
   }
 
@@ -127,12 +128,14 @@ trait RouteSecurity extends Directives with StrictLogging {
     variant of authenticate that allows the caller to perform some action on failure for instance, update login attempt count.
    */
   // TODO set refresh token
-  def authenticate(user: String, password: String, rememberMe: Option[Boolean], onFailure: => Unit): Directive1[Subject] = {
+  def authenticate(
+                    user: String, password: String, rememberMe: Option[Boolean], onFailure: => Unit
+                  ): Directive2[Subject, String] = {
     Try {
       val subject = authService.authenticateCredentials(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))
       val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
       val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
-      setAuthorizationHeader(token) & provide(subject)
+      setAuthorizationHeader(token) & tprovide((subject, token))
     } match {
       case Success(result) => result
       case Failure(e) =>
@@ -142,15 +145,19 @@ trait RouteSecurity extends Directives with StrictLogging {
   }
 
   // TODO set refresh token
-  def onAuthenticate(user: String, password: String, rememberMe: Option[Boolean], onFailure: => Unit): Directive1[Subject] = {
+  def onAuthenticate(
+                      user: String, password: String, rememberMe: Option[Boolean], onFailure: => Unit
+                    ): Directive2[Subject, String] = {
     onComplete(authService.authenticateCredentialsAsync(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))).flatMap {
       case Success(subject) =>
         val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
         val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
-        setAuthorizationHeader(token) & provide(subject)
+        setAuthorizationHeader(token) & tprovide((subject, token))
       case Failure(e) =>
         onFailure
         throw e
     }
   }
+
+  val jwtToken: Directive1[String] = headerValueByName("Authorization")
 }
