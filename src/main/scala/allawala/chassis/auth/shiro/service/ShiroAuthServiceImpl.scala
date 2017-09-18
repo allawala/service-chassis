@@ -42,6 +42,17 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
     JwtCirce.encode(claimJson, auth.rsa.privateKey, JwtAlgorithm.RS512)
   }
 
+  /*
+    Important!! This will fail to decode if its expired. If we need to check if an expired token can be decoded, we will need
+    another method
+   */
+  override def canDecodeToken(token: String): Boolean = {
+    JwtCirce.decodeJson(token, auth.rsa.publicKey, Seq(JwtAlgorithm.RS512)) match {
+      case Success(_) => true
+      case Failure(_) => false
+    }
+  }
+
   override def decodeToken(token: String, refreshToken: Option[String]): JWTSubject = {
     import io.circe.optics.JsonPath._
 
@@ -152,4 +163,5 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
     val s = value.split(":", 2)
     if (s.length == 2) Some((s(0), s(1))) else None
   }
+
 }

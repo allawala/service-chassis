@@ -14,6 +14,7 @@ trait ShiroAuthService {
   private val ThirtyDays = Duration.ofDays(30)
   def generateToken(principalType: PrincipalType, principal: String, expiresIn: TemporalAmount = ThirtyDays): String
   def decodeToken(token: String, refreshToken: Option[String]): JWTSubject
+  def canDecodeToken(token: String): Boolean
 
   def authenticate(authToken: JWTAuthenticationToken): Subject
   def authenticateAsync(authToken: JWTAuthenticationToken): Future[Subject]
