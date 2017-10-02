@@ -12,6 +12,7 @@ import org.apache.shiro.subject.Subject
 import scala.util.{Failure, Success, Try}
 
 trait RouteSecurity extends Directives with StrictLogging {
+  val AccessControlExposeHeader = "Access-Control-Expose-Headers"
   val Authorization = "Authorization"
   val RefreshToken = "Refresh-Token"
   val Bearer = "Bearer"
@@ -20,7 +21,9 @@ trait RouteSecurity extends Directives with StrictLogging {
   def authService: ShiroAuthService
 
   def setAuthorizationHeader(token: String): Directive0 = {
-    respondWithHeader(RawHeader(Authorization, s"$Bearer $token"))
+    val accessControlAccessHeader = RawHeader(AccessControlExposeHeader, Authorization)
+    val authorizationHeader = RawHeader(Authorization, s"$Bearer $token")
+    respondWithHeaders(accessControlAccessHeader, authorizationHeader)
   }
 
   val authenticated: Directive1[Subject] = {
