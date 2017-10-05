@@ -87,24 +87,24 @@ trait RouteSecurity extends Directives with StrictLogging {
   }
 
   def authorizedAny(subject: Subject, permissions: String*): Directive1[Boolean] = {
-    if (!authService.isAuthorizedAny(subject, permissions)) throw AuthorizationException(message = "unauthorized")
+    if (!authService.isAuthorizedAny(subject, permissions.toSet)) throw AuthorizationException(message = "unauthorized")
     provide(true)
   }
 
   def onAuthorizedAny(subject: Subject, permissions: String*): Directive1[Boolean] = {
-    onSuccess(authService.isAuthorizedAnyAsync(subject, permissions)).flatMap { authorized =>
+    onSuccess(authService.isAuthorizedAnyAsync(subject, permissions.toSet)).flatMap { authorized =>
       if (!authorized) throw AuthorizationException(message = "unauthorized")
       provide(true)
     }
   }
 
   def authorizedAll(subject: Subject, permissions: String*): Directive1[Boolean] = {
-    if (!authService.isAuthorizedAll(subject, permissions)) throw AuthorizationException(message = "unauthorized")
+    if (!authService.isAuthorizedAll(subject, permissions.toSet)) throw AuthorizationException(message = "unauthorized")
     provide(true)
   }
 
   def onAuthorizedAll(subject: Subject, permissions: String*): Directive1[Boolean] = {
-    onSuccess(authService.isAuthorizedAllAsync(subject, permissions)).flatMap { authorized =>
+    onSuccess(authService.isAuthorizedAllAsync(subject, permissions.toSet)).flatMap { authorized =>
       if (!authorized) throw AuthorizationException(message = "unauthorized")
       provide(true)
     }

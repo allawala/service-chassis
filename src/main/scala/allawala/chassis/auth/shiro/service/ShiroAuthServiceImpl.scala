@@ -110,25 +110,25 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
     isAuthorized(subject, permission)
   }
 
-  override def isAuthorizedAny(subject: Subject, permissions: Seq[String]): Boolean = {
+  override def isAuthorizedAny(subject: Subject, permissions: Set[String]): Boolean = {
     permissions.find(isAuthorized(subject, _)) match {
       case Some(_) => true
       case None => false
     }
   }
 
-  override def isAuthorizedAnyAsync(subject: Subject, permissions: Seq[String]): Future[Boolean] = {
+  override def isAuthorizedAnyAsync(subject: Subject, permissions: Set[String]): Future[Boolean] = {
     val fSeq = Future.sequence(permissions.map(isAuthorizedAsync(subject, _)))
     fSeq map { auths =>
       auths.contains(true)
     }
   }
 
-  override def isAuthorizedAll(subject: Subject, permissions: Seq[String]): Boolean = {
+  override def isAuthorizedAll(subject: Subject, permissions: Set[String]): Boolean = {
     permissions.forall(isAuthorized(subject, _))
   }
 
-  override def isAuthorizedAllAsync(subject: Subject, permissions: Seq[String]): Future[Boolean] = {
+  override def isAuthorizedAllAsync(subject: Subject, permissions: Set[String]): Future[Boolean] = {
     val fSeq = Future.sequence(permissions.map(isAuthorizedAsync(subject, _)))
     fSeq map { auths =>
       auths.forall(_ == true)

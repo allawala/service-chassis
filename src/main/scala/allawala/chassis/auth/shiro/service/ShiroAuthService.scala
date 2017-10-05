@@ -22,11 +22,11 @@ trait ShiroAuthService {
   def isAuthorized(subject: Subject, permission: String): Boolean
   def isAuthorizedAsync(subject: Subject, permission: String): Future[Boolean]
 
-  def isAuthorizedAny(subject: Subject, permissions: Seq[String]): Boolean
-  def isAuthorizedAnyAsync(subject: Subject, permissions: Seq[String]): Future[Boolean]
+  def isAuthorizedAny(subject: Subject, permissions: Set[String]): Boolean
+  def isAuthorizedAnyAsync(subject: Subject, permissions: Set[String]): Future[Boolean]
 
-  def isAuthorizedAll(subject: Subject, permissions: Seq[String]): Boolean
-  def isAuthorizedAllAsync(subject: Subject, permissions: Seq[String]): Future[Boolean]
+  def isAuthorizedAll(subject: Subject, permissions: Set[String]): Boolean
+  def isAuthorizedAllAsync(subject: Subject, permissions: Set[String]): Future[Boolean]
 
   def authenticateCredentials(authToken: UsernamePasswordToken): Subject
   def authenticateCredentialsAsync(authToken: UsernamePasswordToken): Future[Subject]
