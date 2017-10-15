@@ -73,40 +73,39 @@ trait RouteSecurity extends Directives with StrictLogging {
     }
   }
 
-  // TODO see if this can be converted to a Directive0
-  def authorized(subject: Subject, permission: String): Directive1[Boolean] = {
+  def authorized(subject: Subject, permission: String): Directive0 = {
     if (!authService.isAuthorized(subject, permission)) throw AuthorizationException(message = "unauthorized")
-    provide(true)
+    pass
   }
 
-  def onAuthorized(subject: Subject, permission: String): Directive1[Boolean] = {
+  def onAuthorized(subject: Subject, permission: String): Directive0 = {
     onSuccess(authService.isAuthorizedAsync(subject, permission)).flatMap { authorized =>
       if (!authorized) throw AuthorizationException(message = "unauthorized")
-      provide(true)
+      pass
     }
   }
 
-  def authorizedAny(subject: Subject, permissions: String*): Directive1[Boolean] = {
+  def authorizedAny(subject: Subject, permissions: String*): Directive0 = {
     if (!authService.isAuthorizedAny(subject, permissions.toSet)) throw AuthorizationException(message = "unauthorized")
-    provide(true)
+    pass
   }
 
-  def onAuthorizedAny(subject: Subject, permissions: String*): Directive1[Boolean] = {
+  def onAuthorizedAny(subject: Subject, permissions: String*): Directive0 = {
     onSuccess(authService.isAuthorizedAnyAsync(subject, permissions.toSet)).flatMap { authorized =>
       if (!authorized) throw AuthorizationException(message = "unauthorized")
-      provide(true)
+      pass
     }
   }
 
-  def authorizedAll(subject: Subject, permissions: String*): Directive1[Boolean] = {
+  def authorizedAll(subject: Subject, permissions: String*): Directive0 = {
     if (!authService.isAuthorizedAll(subject, permissions.toSet)) throw AuthorizationException(message = "unauthorized")
-    provide(true)
+    pass
   }
 
-  def onAuthorizedAll(subject: Subject, permissions: String*): Directive1[Boolean] = {
+  def onAuthorizedAll(subject: Subject, permissions: String*): Directive0 = {
     onSuccess(authService.isAuthorizedAllAsync(subject, permissions.toSet)).flatMap { authorized =>
       if (!authorized) throw AuthorizationException(message = "unauthorized")
-      provide(true)
+      pass
     }
   }
 
