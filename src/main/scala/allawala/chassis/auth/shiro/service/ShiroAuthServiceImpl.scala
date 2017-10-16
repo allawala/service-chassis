@@ -1,17 +1,18 @@
 package allawala.chassis.auth.shiro.service
 
-import java.time.Instant
 import java.time.temporal.TemporalAmount
+import java.time.{Instant, Duration => JDuration}
 import javax.inject.{Inject, Named}
 
 import allawala.chassis.auth.service.RefreshTokenService
 import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, JWTSubject, PrincipalType}
-import allawala.chassis.config.model.Auth
+import allawala.chassis.config.model.{Auth, RefreshStrategy}
 import allawala.chassis.core.exception.ServerException
 import io.circe.Json
 import io.circe.parser._
 import org.apache.shiro.authc.{AuthenticationException, AuthenticationToken, UsernamePasswordToken}
 import org.apache.shiro.subject.Subject
+import org.threeten.extra.Temporals
 import pdi.jwt.exceptions.JwtExpirationException
 import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtOptions}
 
@@ -40,6 +41,29 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
     )
 
     JwtCirce.encode(claimJson, auth.rsa.privateKey, JwtAlgorithm.RS512)
+  }
+
+  // TODO refactor this so that it generates both the jwt token and the optional refresh token
+  override def generateToken(
+                              principalType: PrincipalType,
+                              principal: String,
+                              rememberMe: Boolean
+                            ): String = {
+    def expiresIn = {
+      val expiration = auth.expiration
+      val duration = if (!rememberMe) {
+        expiration.expiry
+      } else {
+        RefreshStrategy.withName(expiration.refreshTokenStrategy) match {
+          case RefreshStrategy.Full => expiration.expiry
+          case RefreshStrategy.Simple => expiration.refreshTokenExpiry // issue the token using the refreshTokenExpiry
+        }
+      }
+
+      JDuration.of(duration._1, Temporals.chronoUnit(duration._2))
+    }
+
+    generateToken(principalType, principal, expiresIn)
   }
 
   /*
@@ -81,7 +105,10 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
                         .toEither
                     val (typ, sub) = getSubjectDetails(json)
                     val subject = JWTSubject(PrincipalType.withName(typ), sub, token)
-                    val newToken = generateToken(subject.principalType, subject.principal)
+                    /*
+                      If we are here, the token has expired and the refresh token exists, so remember me must be true
+                     */
+                    val newToken = generateToken(subject.principalType, subject.principal, rememberMe = true)
                     subject.copy(credentials = newToken)
                   case None => throw new AuthenticationException("Refresh token not found", e)
                 }

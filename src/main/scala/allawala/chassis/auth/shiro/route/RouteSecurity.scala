@@ -113,7 +113,7 @@ trait RouteSecurity extends Directives with StrictLogging {
   def authenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive2[Subject, String] = {
     val subject = authService.authenticateCredentials(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))
     val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
-    val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
+    val token = authService.generateToken(PrincipalType.User, primaryPrincipal, rememberMe.getOrElse(false))
     setAuthorizationHeader(token) & tprovide((subject, token))
   }
 
@@ -121,7 +121,7 @@ trait RouteSecurity extends Directives with StrictLogging {
   def onAuthenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive2[Subject, String] = {
     onSuccess(authService.authenticateCredentialsAsync(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))).flatMap { subject =>
       val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
-      val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
+      val token = authService.generateToken(PrincipalType.User, primaryPrincipal, rememberMe.getOrElse(false))
       setAuthorizationHeader(token) & tprovide((subject, token))
     }
   }
@@ -136,7 +136,7 @@ trait RouteSecurity extends Directives with StrictLogging {
     Try {
       val subject = authService.authenticateCredentials(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))
       val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
-      val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
+      val token = authService.generateToken(PrincipalType.User, primaryPrincipal, rememberMe.getOrElse(false))
       setAuthorizationHeader(token) & tprovide((subject, token))
     } match {
       case Success(result) => result
@@ -153,7 +153,7 @@ trait RouteSecurity extends Directives with StrictLogging {
     onComplete(authService.authenticateCredentialsAsync(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))).flatMap {
       case Success(subject) =>
         val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
-        val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
+        val token = authService.generateToken(PrincipalType.User, primaryPrincipal, rememberMe.getOrElse(false))
         setAuthorizationHeader(token) & tprovide((subject, token))
       case Failure(e) =>
         onFailure

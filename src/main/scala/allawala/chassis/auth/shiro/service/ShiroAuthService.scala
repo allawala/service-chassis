@@ -1,6 +1,5 @@
 package allawala.chassis.auth.shiro.service
 
-import java.time.Duration
 import java.time.temporal.TemporalAmount
 
 import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, JWTSubject, PrincipalType}
@@ -10,9 +9,8 @@ import org.apache.shiro.subject.Subject
 import scala.concurrent.Future
 
 trait ShiroAuthService {
-  // TODO get expiration from the config
-  private val ThirtyDays = Duration.ofDays(30)
-  def generateToken(principalType: PrincipalType, principal: String, expiresIn: TemporalAmount = ThirtyDays): String
+  def generateToken(principalType: PrincipalType, principal: String, expiresIn: TemporalAmount): String
+  def generateToken(principalType: PrincipalType, principal: String, rememberMe: Boolean): String
   def decodeToken(token: String, refreshToken: Option[String]): JWTSubject
   def canDecodeToken(token: String): Boolean
 

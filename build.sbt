@@ -40,6 +40,7 @@ libraryDependencies ++= {
   val scalatestVersion = "3.0.1"
   val slf4jVersion = "1.7.25"
   val shiroVersion = "1.4.0"
+  val threeTenExtraVersion = "1.2"
 
   Seq(
     // Akka
@@ -85,7 +86,10 @@ libraryDependencies ++= {
     "org.apache.shiro" % "shiro-core" % shiroVersion,
     "org.apache.shiro" % "shiro-guice" % shiroVersion,
 
-    // Test Dependencies
+    // Threeten Extras
+    "org.threeten" % "threeten-extra" % threeTenExtraVersion,
+
+  // Test Dependencies
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test"
   )
