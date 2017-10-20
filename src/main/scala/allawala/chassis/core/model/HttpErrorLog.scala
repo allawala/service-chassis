@@ -1,5 +1,8 @@
-package allawala.chassis.core.exception
+package allawala.chassis.core.model
 
+/*
+  Logging payload on any Http request error.
+*/
 case class HttpErrorLog(
                          method: String,
                          uri: String,

@@ -1,6 +1,7 @@
 package allawala.chassis.core.exception
 
 import akka.http.scaladsl.model.StatusCode
+import allawala.chassis.core.model.{ErrorEnvelope, ErrorType}
 
 trait DomainException extends Exception {
   def statusCode: StatusCode
@@ -14,14 +15,14 @@ trait DomainException extends Exception {
   def message: String
 
   /**
-    *   errorMap: any key value pair that needs to be passed as part of the error response in the [[ErrorEnvelope]] as well as
-    *   logged as part of the [[HttpErrorLog]]
+    *   errorMap: any key value pair that needs to be passed as part of the error response in the [[allawala.chassis.core.model.ErrorEnvelope]] as well as
+    *   logged as part of the [[allawala.chassis.core.model.HttpErrorLog]]
     */
   def errorMap: Map[String, String] = Map.empty[String, String]
 
   /**
-    *   logMap: any key value pair that need to be logged as part of the [[HttpErrorLog]] but is not required to be part of the
-    *   error response in the [[ErrorEnvelope]]
+    *   logMap: any key value pair that need to be logged as part of the [[allawala.chassis.core.model.HttpErrorLog]] but is not required to be part of the
+    *   error response in the [[allawala.chassis.core.model.ErrorEnvelope]]
     */
   def logMap: Map[String, AnyRef] = Map.empty[String, AnyRef]
 

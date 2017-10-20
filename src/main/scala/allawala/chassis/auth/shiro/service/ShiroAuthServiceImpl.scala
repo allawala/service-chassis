@@ -4,13 +4,14 @@ import java.time.temporal.TemporalAmount
 import java.time.{Instant, Duration => JDuration}
 import javax.inject.{Inject, Named}
 
+import allawala.chassis.auth.exception.AuthenticationException
 import allawala.chassis.auth.service.RefreshTokenService
 import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, JWTSubject, PrincipalType}
 import allawala.chassis.config.model.{Auth, RefreshStrategy}
-import allawala.chassis.core.exception.ServerException
+import allawala.chassis.core.exception.{DomainException, ServerException}
 import io.circe.Json
 import io.circe.parser._
-import org.apache.shiro.authc.{AuthenticationException, AuthenticationToken, UsernamePasswordToken}
+import org.apache.shiro.authc.{AuthenticationToken, UsernamePasswordToken}
 import org.apache.shiro.subject.Subject
 import org.threeten.extra.Temporals
 import pdi.jwt.exceptions.JwtExpirationException
@@ -77,21 +78,22 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
     }
   }
 
-  override def decodeToken(token: String, refreshToken: Option[String]): JWTSubject = {
+  override def decodeToken(token: String, refreshToken: Option[String]): Either[DomainException, JWTSubject] = {
     import io.circe.optics.JsonPath._
 
+    // TODO return either.
     def getSubjectDetails(json: Json): (String, String) = {
       val typ = root.typ.string.getOption(json)
-        .getOrElse(throw new AuthenticationException("JWT token invalid. Missing typ"))
+        .getOrElse(throw AuthenticationException(message = "JWT token invalid. Missing typ"))
       val sub = root.sub.string.getOption(json)
-        .getOrElse(throw new AuthenticationException("JWT token invalid. Missing subject"))
+        .getOrElse(throw AuthenticationException(message = "JWT token invalid. Missing subject"))
       (typ, sub)
     }
 
     JwtCirce.decodeJson(token, auth.rsa.publicKey, Seq(JwtAlgorithm.RS512)) match {
       case Success(json) =>
         val (typ, sub) = getSubjectDetails(json)
-        JWTSubject(PrincipalType.withName(typ), sub, token)
+        Right(JWTSubject(PrincipalType.withName(typ), sub, token))
       case Failure(e) =>
         e match {
           case _: JwtExpirationException if refreshToken.isDefined =>
@@ -109,13 +111,13 @@ class ShiroAuthServiceImpl @Inject()(val auth: Auth, val refreshTokenService: Re
                       If we are here, the token has expired and the refresh token exists, so remember me must be true
                      */
                     val newToken = generateToken(subject.principalType, subject.principal, rememberMe = true)
-                    subject.copy(credentials = newToken)
-                  case None => throw new AuthenticationException("Refresh token not found", e)
+                    Right(subject.copy(credentials = newToken))
+                  case None => Left(AuthenticationException(message = "Refresh token not found", cause = e))
                 }
 
-              case None => throw new AuthenticationException("Failed to decode refresh token")
+              case None => Left(AuthenticationException(message = "Failed to decode refresh token"))
             }
-          case _ => throw new AuthenticationException("JWT authentication failed", e)
+          case _ => Left(AuthenticationException(message = "JWT authentication failed", cause = e))
 
         }
     }

@@ -6,12 +6,13 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server._
 import allawala.chassis.auth.exception.AuthenticationException
 import allawala.chassis.core.exception.{DomainException, UnexpectedException}
+import allawala.chassis.core.rejection.DomainRejection
 import org.apache.shiro.authc.{AuthenticationException => ShiroAuthenticationException}
 import org.slf4j.MDC
 
 trait RouteWrapper extends RouteSupport {
 
-  def myExceptionHandler: ExceptionHandler = {
+  def routesExceptionHandler: ExceptionHandler = {
     import io.circe.generic.auto._
 
     ExceptionHandler {
@@ -44,6 +45,19 @@ trait RouteWrapper extends RouteSupport {
           complete(InternalServerError -> ue.toErrorEnvelope(MDC.get(XCorrelationId)))
         }
     }
+  }
+
+  def routesRejectionHandler: RejectionHandler = {
+    import io.circe.generic.auto._
+
+    RejectionHandler.newBuilder().handle {
+      case rejection: DomainRejection  ⇒
+        extractRequest { request =>
+          val domainException = rejection.ex
+          logError(request, domainException)
+          complete(domainException.statusCode -> domainException.toErrorEnvelope(MDC.get(XCorrelationId)))
+        }
+    }.result()
   }
 
   val correlationHeader: Directive1[String] =

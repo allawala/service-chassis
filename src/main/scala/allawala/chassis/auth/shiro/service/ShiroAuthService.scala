@@ -3,6 +3,7 @@ package allawala.chassis.auth.shiro.service
 import java.time.temporal.TemporalAmount
 
 import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, JWTSubject, PrincipalType}
+import allawala.chassis.core.exception.DomainException
 import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.subject.Subject
 
@@ -11,7 +12,7 @@ import scala.concurrent.Future
 trait ShiroAuthService {
   def generateToken(principalType: PrincipalType, principal: String, expiresIn: TemporalAmount): String
   def generateToken(principalType: PrincipalType, principal: String, rememberMe: Boolean): String
-  def decodeToken(token: String, refreshToken: Option[String]): JWTSubject
+  def decodeToken(token: String, refreshToken: Option[String]): Either[DomainException, JWTSubject]
   def canDecodeToken(token: String): Boolean
 
   def authenticate(authToken: JWTAuthenticationToken): Subject

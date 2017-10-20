@@ -1,6 +1,7 @@
 package allawala.chassis.core.exception
 
 import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import allawala.chassis.core.model.ErrorType
 
 case class UnexpectedException(
                                 override val errorCode: String = "unexpected.error",

@@ -1,11 +1,10 @@
 package allawala.chassis.http.route
 
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
+import akka.http.scaladsl.model.StatusCode
 import akka.http.scaladsl.model.StatusCodes.OK
-import akka.http.scaladsl.model.{HttpRequest, StatusCode}
 import akka.http.scaladsl.server.{Directives, Route}
-import allawala.chassis.core.exception.{DomainException, HttpErrorLog}
-import com.typesafe.scalalogging.StrictLogging
+import allawala.chassis.core.exception.DomainException
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import org.slf4j.MDC
 
@@ -14,26 +13,9 @@ import scala.concurrent.Future
 trait RouteSupport
   extends Directives
     with ErrorAccumulatingCirceSupport
-    with StrictLogging {
+    with RouteLogging {
 
   val XCorrelationId = "X-CORRELATION-ID"
-
-  protected def logError(request: HttpRequest, e: DomainException, errorCode: Option[String] = None) = {
-    import io.circe.generic.auto._
-    import io.circe.syntax._
-
-    val log = HttpErrorLog(
-      method = request.method.value,
-      uri = request.uri.toString(),
-      errorType = e.errorType,
-      errorCode = e.errorCode,
-      errorMessage = e.message,
-      thread = e.thread,
-      payload = e.errorMap ++ e.logMap.mapValues(_.toString)
-    )
-
-    logger.error(log.asJson.noSpaces, e)
-  }
 
   def onCompleteEither[T: ToEntityMarshaller](resource: Future[Either[DomainException, T]]): Route =
     onCompleteEither(OK)(resource)
