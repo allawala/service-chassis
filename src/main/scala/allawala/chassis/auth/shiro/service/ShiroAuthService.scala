@@ -1,32 +1,24 @@
 package allawala.chassis.auth.shiro.service
 
-import java.time.temporal.TemporalAmount
-
-import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, JWTSubject, PrincipalType}
-import allawala.chassis.core.exception.DomainException
-import org.apache.shiro.authc.UsernamePasswordToken
+import allawala.chassis.auth.shiro.model.AuthenticatedSubject
+import allawala.{ResponseE, ResponseFE}
 import org.apache.shiro.subject.Subject
 
 import scala.concurrent.Future
 
 trait ShiroAuthService {
-  def generateToken(principalType: PrincipalType, principal: String, expiresIn: TemporalAmount): String
-  def generateToken(principalType: PrincipalType, principal: String, rememberMe: Boolean): String
-  def decodeToken(token: String, refreshToken: Option[String]): Either[DomainException, JWTSubject]
-  def canDecodeToken(token: String): Boolean
+  def authenticateCredentials(user: String, password: String, rememberMe: Boolean): ResponseFE[AuthenticatedSubject]
+  def authenticateToken(jwtToken: String, refreshToken: Option[String]): ResponseFE[AuthenticatedSubject]
 
-  def authenticate(authToken: JWTAuthenticationToken): Subject
-  def authenticateAsync(authToken: JWTAuthenticationToken): Future[Subject]
+  def impersonateSubjectSync(principal: String, credentials: String): ResponseE[Subject]
+  def impersonateSubject(principal: String, credentials: String): ResponseFE[Subject]
 
-  def isAuthorized(subject: Subject, permission: String): Boolean
-  def isAuthorizedAsync(subject: Subject, permission: String): Future[Boolean]
+  def isAuthorizedSync(subject: Subject, permission: String): Boolean
+  def isAuthorized(subject: Subject, permission: String): Future[Boolean]
 
-  def isAuthorizedAny(subject: Subject, permissions: Set[String]): Boolean
-  def isAuthorizedAnyAsync(subject: Subject, permissions: Set[String]): Future[Boolean]
+  def isAuthorizedAnySync(subject: Subject, permissions: Set[String]): Boolean
+  def isAuthorizedAny(subject: Subject, permissions: Set[String]): Future[Boolean]
 
-  def isAuthorizedAll(subject: Subject, permissions: Set[String]): Boolean
-  def isAuthorizedAllAsync(subject: Subject, permissions: Set[String]): Future[Boolean]
-
-  def authenticateCredentials(authToken: UsernamePasswordToken): Subject
-  def authenticateCredentialsAsync(authToken: UsernamePasswordToken): Future[Subject]
+  def isAuthorizedAllSync(subject: Subject, permissions: Set[String]): Boolean
+  def isAuthorizedAll(subject: Subject, permissions: Set[String]): Future[Boolean]
 }

@@ -12,5 +12,8 @@ case object RefreshStrategy extends Enum[RefreshStrategy] with CirceEnum[Refresh
   // Proper refresh token and remember me semantics
   case object Full extends RefreshStrategy
 
+  def isSimple(strategy: String): Boolean = withNameOption(strategy).contains(Simple)
+  def isFull(strategy: String): Boolean = withNameOption(strategy).contains(Full)
+
   val values = findValues
 }

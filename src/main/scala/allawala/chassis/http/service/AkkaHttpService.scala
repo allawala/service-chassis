@@ -1,4 +1,4 @@
-package allawala.chassis.http.model
+package allawala.chassis.http.service
 
 import javax.inject.{Inject, Named, Provider}
 
@@ -14,17 +14,17 @@ import allawala.chassis.http.route.Routes
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class AkkaHttp @Inject()(
-                          val baseConfig: BaseConfig,
-                          val routes: Routes,
-                          val environment: Environment,
-                          val logger: LoggingAdapter,
-                          val lifecycleAwareRegistryProvider : Provider[LifecycleAwareRegistry]
-                        )(
-                          implicit val actorSystem: ActorSystem,
-                          implicit val actorMaterializer: ActorMaterializer,
-                          @Named("default-dispatcher") implicit val ec: ExecutionContext
-                        ) {
+class AkkaHttpService @Inject()(
+                                 val baseConfig: BaseConfig,
+                                 val routes: Routes,
+                                 val environment: Environment,
+                                 val logger: LoggingAdapter,
+                                 val lifecycleAwareRegistryProvider: Provider[LifecycleAwareRegistry]
+                               )(
+                                 implicit val actorSystem: ActorSystem,
+                                 implicit val actorMaterializer: ActorMaterializer,
+                                 @Named("default-dispatcher") implicit val ec: ExecutionContext
+                               ) {
 
   def run(): Unit = {
     val started = lifecycleAwareRegistryProvider.get().get().map(_.preStart())

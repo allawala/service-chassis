@@ -17,17 +17,8 @@ trait RouteWrapper extends RouteSupport {
 
     ExceptionHandler {
       // This can happen on a Future.failed { with some domain exception}
-      case e: DomainException =>
-        extractRequest { request =>
-          logError(request, e)
-          complete(e.statusCode -> e.toErrorEnvelope(MDC.get(XCorrelationId)))
-        }
-      case e: IllegalArgumentException =>
-        extractRequest { request =>
-          val ue = UnexpectedException(errorCode = "invalid.request", e)
-          logError(request, ue)
-          complete(BadRequest -> ue.toErrorEnvelope(MDC.get(XCorrelationId)))
-        }
+      case e: DomainException => fail(e)
+      case e: IllegalArgumentException => fail(BadRequest, UnexpectedException(errorCode = "invalid.request", e))
       case e: ShiroAuthenticationException =>
         extractRequest { request =>
           val ae = AuthenticationException(message = e.getMessage, cause = e)
@@ -38,27 +29,13 @@ trait RouteWrapper extends RouteSupport {
       case e: NoSuchElementException =>
         // For akka http cors. Ignore logging
         complete(NotFound -> e.getMessage)
-      case e: Exception =>
-        extractRequest { request =>
-          val ue = UnexpectedException(cause = e)
-          logError(request, ue)
-          complete(InternalServerError -> ue.toErrorEnvelope(MDC.get(XCorrelationId)))
-        }
+      case e: Exception => fail(InternalServerError, UnexpectedException(cause = e))
     }
   }
 
-  def routesRejectionHandler: RejectionHandler = {
-    import io.circe.generic.auto._
-
-    RejectionHandler.newBuilder().handle {
-      case rejection: DomainRejection  ⇒
-        extractRequest { request =>
-          val domainException = rejection.ex
-          logError(request, domainException)
-          complete(domainException.statusCode -> domainException.toErrorEnvelope(MDC.get(XCorrelationId)))
-        }
-    }.result()
-  }
+  def routesRejectionHandler: RejectionHandler = RejectionHandler.newBuilder().handle {
+    case rejection: DomainRejection ⇒ fail(rejection.ex)
+  }.result()
 
   val correlationHeader: Directive1[String] =
     optionalHeaderValueByName(XCorrelationId) map { optId =>

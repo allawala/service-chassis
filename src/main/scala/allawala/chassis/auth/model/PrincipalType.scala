@@ -1,7 +1,7 @@
-package allawala.chassis.auth.shiro.model
+package allawala.chassis.auth.model
 
-import enumeratum.{CirceEnum, Enum, EnumEntry}
 import enumeratum.EnumEntry.Lowercase
+import enumeratum.{CirceEnum, Enum, EnumEntry}
 
 sealed trait PrincipalType extends EnumEntry with Lowercase
 
@@ -12,7 +12,7 @@ case object PrincipalType extends Enum[PrincipalType] with CirceEnum[PrincipalTy
   /*
     Eg. "service" principal type enquires whether a certain user is permitted to perform some action. This allows us to have
     flexibility in defining our authentication logic differently for the two user types if required and allowing us to get a
-    Shiro subject representing the impersonated user.
+    subject representing the impersonated user.
   */
   case object ImpersonatedUser extends PrincipalType
 

@@ -8,8 +8,9 @@ import akka.stream.ActorMaterializer
 import allawala.chassis.config.model.BaseConfig
 import allawala.chassis.config.module.ConfigModule
 import allawala.chassis.health.module.HealthModule
-import allawala.chassis.http.model.AkkaHttp
 import allawala.chassis.http.module.HttpModule
+import allawala.chassis.http.service.AkkaHttpService
+import allawala.chassis.util.module.UtilModule
 import com.google.inject.{AbstractModule, Module, Provides, Singleton}
 import net.codingwell.scalaguice.ScalaModule
 
@@ -21,8 +22,9 @@ class ChassisModule extends AbstractModule with ScalaModule {
     install(new ConfigModule)
     install(new HttpModule)
     install(new HealthModule)
+    install(new UtilModule)
 
-    bind[AkkaHttp].asEagerSingleton()
+    bind[AkkaHttpService].asEagerSingleton()
   }
 }
 

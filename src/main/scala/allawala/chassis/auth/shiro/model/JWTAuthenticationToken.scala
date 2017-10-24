@@ -1,5 +1,6 @@
 package allawala.chassis.auth.shiro.model
 
+import allawala.chassis.auth.model.{JWTSubject, PrincipalType}
 import org.apache.shiro.authc.AuthenticationToken
 
 case class Principal(principalType: PrincipalType, principal: String)

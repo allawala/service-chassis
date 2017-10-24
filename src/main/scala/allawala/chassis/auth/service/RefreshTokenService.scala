@@ -1,10 +1,9 @@
 package allawala.chassis.auth.service
 
-import allawala.chassis.auth.model.{RefreshToken, RefreshTokenLookupResult}
+import allawala.chassis.auth.model.RefreshToken
 
-// TODO update the return types to possibly be either
 trait RefreshTokenService {
-  def lookup(selector: String): Option[RefreshTokenLookupResult]
-  def store(refreshToken: RefreshToken): Unit
-  def remove(selector: String): Unit
+  def generateToken(): RefreshToken
+  def hashToken(token: String): String
+  def decodeSelectorAndToken(value: String): Option[(String, String)]
 }
