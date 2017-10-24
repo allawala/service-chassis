@@ -104,7 +104,7 @@ trait RouteSecurity extends Directives with StrictLogging {
     onSuccess(authService.authenticateCredentials(user, password, rememberMe)).flatMap {
       case Left(ex) => onSuccess(onFailure) flatMap {
         case Left(e) => reject(e) // Something in error handling itself gone wrong
-        case Right(_) => reject(AuthenticationException(message = "authentication failure", cause = ex))
+        case Right(_) => reject(AuthenticationException(message = "authentication failed", cause = ex))
       }
       case Right(authenticatedSubject) => authenticated(authenticatedSubject)
     }

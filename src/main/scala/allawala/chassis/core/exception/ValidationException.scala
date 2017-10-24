@@ -5,8 +5,11 @@ import allawala.chassis.core.model.ErrorType
 import allawala.chassis.core.validation.ValidationError
 import cats.data.NonEmptyList
 
-case class ValidationException(clazz: Class[_], validationErrors: NonEmptyList[ValidationError]) extends DomainException {
-  private val name = clazz.getSimpleName
+case class ValidationException(
+                                validationErrors: NonEmptyList[ValidationError],
+                                modelName: Option[String] = None
+                              ) extends DomainException {
+  private val name = modelName.getOrElse("model")
   override val statusCode: StatusCode = StatusCodes.BadRequest
   override val errorCode: String = s"${name.toLowerCase}.validation.failed"
   override val message: String = s"$name validation failed"

@@ -16,6 +16,7 @@ class Routes @Inject()(
   lazy val rejectionHandler: RejectionHandler = corsRejectionHandler
     .withFallback(optionsRejectionHandler)
     .withFallback(routesRejectionHandler)
+    .withFallback(circeRejectHandler)
     .withFallback(RejectionHandler.default)
 
   lazy val handleErrors: Directive[Unit] = handleRejections(rejectionHandler) & handleExceptions(routesExceptionHandler)
