@@ -58,38 +58,58 @@ trait RouteSecurity extends Directives with StrictLogging {
   }
 
   def authorized(subject: Subject, permission: String): Directive0 = {
-    if (!authService.isAuthorizedSync(subject, permission)) reject(AuthorizationException(message = "unauthorized"))
-    pass
+    if (!authService.isAuthorizedSync(subject, permission)) {
+      reject(AuthorizationException(message = "unauthorized"))
+    }
+    else {
+      pass
+    }
   }
 
   def onAuthorized(subject: Subject, permission: String): Directive0 = {
     onSuccess(authService.isAuthorized(subject, permission)).flatMap { authorized =>
-      if (!authorized) reject(AuthorizationException(message = "unauthorized"))
-      pass
+      if (!authorized) {
+        reject(AuthorizationException(message = "unauthorized"))
+      }
+      else {
+        pass
+      }
     }
   }
 
   def authorizedAny(subject: Subject, permissions: String*): Directive0 = {
-    if (!authService.isAuthorizedAnySync(subject, permissions.toSet)) reject(AuthorizationException(message = "unauthorized"))
-    pass
-  }
-
-  def onAuthorizedAny(subject: Subject, permissions: String*): Directive0 = {
-    onSuccess(authService.isAuthorizedAny(subject, permissions.toSet)).flatMap { authorized =>
-      if (!authorized) reject(AuthorizationException(message = "unauthorized"))
+    if (!authService.isAuthorizedAnySync(subject, permissions.toSet)) {
+      reject(AuthorizationException(message = "unauthorized"))
+    } else {
       pass
     }
   }
 
+  def onAuthorizedAny(subject: Subject, permissions: String*): Directive0 = {
+    onSuccess(authService.isAuthorizedAny(subject, permissions.toSet)).flatMap { authorized =>
+      if (!authorized) {
+        reject(AuthorizationException(message = "unauthorized"))
+      } else {
+        pass
+      }
+    }
+  }
+
   def authorizedAll(subject: Subject, permissions: String*): Directive0 = {
-    if (!authService.isAuthorizedAllSync(subject, permissions.toSet)) reject(AuthorizationException(message = "unauthorized"))
-    pass
+    if (!authService.isAuthorizedAllSync(subject, permissions.toSet)) {
+      reject(AuthorizationException(message = "unauthorized"))
+    } else {
+      pass
+    }
   }
 
   def onAuthorizedAll(subject: Subject, permissions: String*): Directive0 = {
     onSuccess(authService.isAuthorizedAll(subject, permissions.toSet)).flatMap { authorized =>
-      if (!authorized) reject(AuthorizationException(message = "unauthorized"))
-      pass
+      if (!authorized) {
+        reject(AuthorizationException(message = "unauthorized"))
+      } else {
+        pass
+      }
     }
   }
 
