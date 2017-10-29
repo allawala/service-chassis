@@ -219,7 +219,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
         refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns Some(("selector", "validator"))
         tokenStorageService.lookupTokens(equ("selector")) returns Future.successful(Right((jwtToken, expiredRefreshToken)))
         tokenStorageService.removeTokens(
-          equ(PrincipalType.User), equ(user), equ(jwtToken), equ(Some(expiredRefreshToken))
+          equ(PrincipalType.User), equ(user), equ(jwtToken), equ(Some("selector"))
         ) returns Future.successful(Right(()))
 
         val result = Await.result(service.authenticateToken(jwtToken, Some(encodedRefreshToken)), timeout)
@@ -310,7 +310,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
         tokenStorageService.lookupTokens(equ("selector")) returns Future.successful(Right((jwtToken, refreshToken)))
         refreshTokenService.hashToken(equ("validator")) returns "SometokenHash"
         tokenStorageService.removeTokens(
-          equ(PrincipalType.User), equ(user), equ(jwtToken), equ(Some(refreshToken))
+          equ(PrincipalType.User), equ(user), equ(jwtToken), equ(Some("selector"))
         ) returns Future.successful(Right(()))
 
         val result = Await.result(service.authenticateToken(jwtToken, Some(encodedRefreshToken)), timeout)
@@ -344,6 +344,66 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
         result.isLeft shouldBe true
 
         oneOf(subject).login(equ(JWTAuthenticationToken(jwtSubject)))
+      }
+    }
+
+    "successfully invalidate a session (valid jwt token, no refresh token)" in {
+      new JWTTokenAuthFixture {
+        jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
+        tokenStorageService.removeTokens(
+          equ(PrincipalType.User), equ(user), equ(jwtToken), equ(None)
+        ) returns Future.successful(Right(()))
+
+        val result = Await.result(service.invalidate(jwtToken, None), timeout)
+
+        result.isRight shouldBe true
+
+        noneOf(subject).login(equ(JWTAuthenticationToken(jwtSubject)))
+      }
+    }
+
+    "successfully invalidate a session (valid jwt token, valid refresh token)" in {
+      new JWTTokenAuthFixture {
+        jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
+        refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns Some(("selector", "validator"))
+        tokenStorageService.removeTokens(
+          equ(PrincipalType.User), equ(user), equ(jwtToken), equ(Some("selector"))
+        ) returns Future.successful(Right(()))
+
+        val result = Await.result(service.invalidate(jwtToken, Some(encodedRefreshToken)), timeout)
+
+        result.isRight shouldBe true
+
+        noneOf(subject).login(equ(JWTAuthenticationToken(jwtSubject)))
+      }
+    }
+
+    "successfully invalidate a session (valid jwt token, invalid refresh token)" in {
+      new JWTTokenAuthFixture {
+        jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
+        refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns None
+        tokenStorageService.removeTokens(
+          equ(PrincipalType.User), equ(user), equ(jwtToken), equ(None)
+        ) returns Future.successful(Right(()))
+
+        val result = Await.result(service.invalidate(jwtToken, Some(encodedRefreshToken)), timeout)
+
+        result.isRight shouldBe true
+
+        noneOf(subject).login(equ(JWTAuthenticationToken(jwtSubject)))
+      }
+    }
+
+    "successfully invalidate all sessions" in {
+      new JWTTokenAuthFixture {
+        jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
+        tokenStorageService.removeAllTokens(equ(PrincipalType.User), equ(user)) returns Future.successful(Right(()))
+
+        val result = Await.result(service.invalidateAll(jwtToken), timeout)
+
+        result.isRight shouldBe true
+
+        noneOf(subject).login(equ(JWTAuthenticationToken(jwtSubject)))
       }
     }
   }

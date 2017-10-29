@@ -21,4 +21,7 @@ trait ShiroAuthService {
 
   def isAuthorizedAllSync(subject: Subject, permissions: Set[String]): Boolean
   def isAuthorizedAll(subject: Subject, permissions: Set[String]): Future[Boolean]
+
+  def invalidate(jwtToken: String, refreshToken: Option[String]): ResponseFE[Unit]
+  def invalidateAll(jwtToken: String): ResponseFE[Unit]
 }

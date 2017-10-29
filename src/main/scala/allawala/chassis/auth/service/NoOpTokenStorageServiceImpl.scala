@@ -28,8 +28,13 @@ class NoOpTokenStorageServiceImpl @Inject()(val dateTimeProvider: DateTimeProvid
   }
 
   override def removeTokens(
-                             principalType: PrincipalType, principal: String, jwtToken: String, refreshToken: Option[RefreshToken]
+                             principalType: PrincipalType, principal: String,
+                             jwtToken: String, refreshTokenSelector: Option[String]
                            ): ResponseFE[Unit] = {
+    Future.successful(Right(()))
+  }
+
+  override def removeAllTokens(principalType: PrincipalType, principal: String): ResponseFE[Unit] = {
     Future.successful(Right(()))
   }
 }

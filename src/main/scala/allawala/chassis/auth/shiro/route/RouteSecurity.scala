@@ -57,6 +57,35 @@ trait RouteSecurity extends Directives with StrictLogging {
     }
   }
 
+  val onInvalidateSession: Directive0 = {
+    (headerValueByName(Authorization) & optionalHeaderValueByName(RefreshToken)).tflatMap {
+      case (authToken, refreshToken) =>
+        if (!authToken.startsWith("Bearer")) {
+          reject(AuthenticationException(message = "Authentication failed", logMap = Map("reason" -> "Missing Bearer")))
+        } else {
+          val jwtToken = authToken.split(' ').last
+          onSuccess(authService.invalidate(jwtToken, refreshToken)) flatMap {
+            case Left(e) => reject(e)
+            case Right(_) => pass
+          }
+        }
+    }
+  }
+
+  val onInvalidateAllSessions: Directive0 = {
+    headerValueByName(Authorization).flatMap { authToken =>
+      if (!authToken.startsWith("Bearer")) {
+        reject(AuthenticationException(message = "Authentication failed", logMap = Map("reason" -> "Missing Bearer")))
+      } else {
+        val jwtToken = authToken.split(' ').last
+        onSuccess(authService.invalidateAll(jwtToken)) flatMap {
+          case Left(e) => reject(e)
+          case Right(_) => pass
+        }
+      }
+    }
+  }
+
   def authorized(subject: Subject, permission: String): Directive0 = {
     if (!authService.isAuthorizedSync(subject, permission)) {
       reject(AuthorizationException(message = "unauthorized"))

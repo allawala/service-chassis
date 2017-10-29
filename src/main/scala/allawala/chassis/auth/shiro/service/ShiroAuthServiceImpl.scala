@@ -78,6 +78,35 @@ class ShiroAuthServiceImpl @Inject()(
     }
   }
 
+  override def invalidate(jwtToken: String, refreshToken: Option[String]): ResponseFE[Unit] = {
+    // Since we are removing the token, we dont care if its expired
+    jwtTokenService.decodeExpiredToken(jwtToken) match {
+      case Left(e) =>
+        Future.successful(Left(AuthenticationException(message = "Authentication failed", cause = e)))
+      case Right(jwtSubject) =>
+        val selectorToRemove = refreshToken match {
+          case Some(encodedRefreshToken) =>
+            val decoded = refreshTokenService.decodeSelectorAndToken(encodedRefreshToken)
+            decoded match {
+              case Some((selector, _)) => Some(selector)
+              case None => None
+            }
+          case None => None
+        }
+        tokenStorageService.removeTokens(jwtSubject.principalType, jwtSubject.principal, jwtToken, selectorToRemove)
+    }
+  }
+
+  override def invalidateAll(jwtToken: String): ResponseFE[Unit] = {
+    // Since we are removing the token, we dont care if its expired
+    jwtTokenService.decodeExpiredToken(jwtToken) match {
+      case Left(e) =>
+        Future.successful(Left(AuthenticationException(message = "Authentication failed", cause = e)))
+      case Right(jwtSubject) =>
+        tokenStorageService.removeAllTokens(jwtSubject.principalType, jwtSubject.principal)
+    }
+  }
+
   // Authenticate via the UsernamePasswordTokenRealm
   private def authenticateUserNamePassword(user: String, password: String, rememberMe: Boolean) = {
     val jwtToken = jwtTokenService.generateToken(PrincipalType.User, user, rememberMe)
@@ -205,7 +234,7 @@ class ShiroAuthServiceImpl @Inject()(
     val principal = expiredJwtSubject.principal
     val expiredJwtToken = expiredJwtSubject.credentials
 
-    tokenStorageService.removeTokens(principalType, principal, expiredJwtToken, expiredRefreshToken) map {
+    tokenStorageService.removeTokens(principalType, principal, expiredJwtToken, expiredRefreshToken.map(_.selector)) map {
       case Left(e) =>
         Left(AuthenticationException(
           message = "Authentication failed",

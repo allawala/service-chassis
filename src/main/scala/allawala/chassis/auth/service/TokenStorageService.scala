@@ -23,6 +23,8 @@ trait TokenStorageService {
                   ): ResponseFE[Unit]
 
   def removeTokens(
-                    principalType: PrincipalType, principal: String, jwtToken: String, refreshToken: Option[RefreshToken]
+                    principalType: PrincipalType, principal: String, jwtToken: String, refreshTokenSelector: Option[String]
                   ): ResponseFE[Unit]
+
+  def removeAllTokens(principalType: PrincipalType, principal: String): ResponseFE[Unit]
 }
