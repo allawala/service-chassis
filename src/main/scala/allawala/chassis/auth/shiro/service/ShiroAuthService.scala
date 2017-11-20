@@ -1,26 +1,27 @@
 package allawala.chassis.auth.shiro.service
 
-import java.time.Duration
-import java.time.temporal.TemporalAmount
-
-import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, JWTSubject, PrincipalType}
-import org.apache.shiro.authc.UsernamePasswordToken
+import allawala.chassis.auth.shiro.model.AuthenticatedSubject
+import allawala.{ResponseE, ResponseFE}
 import org.apache.shiro.subject.Subject
 
 import scala.concurrent.Future
 
 trait ShiroAuthService {
-  // TODO get expiration from the config
-  private val ThirtyDays = Duration.ofDays(30)
-  def generateToken(principalType: PrincipalType, principal: String, expiresIn: TemporalAmount = ThirtyDays): String
-  def decodeToken(token: String, refreshToken: Option[String]): JWTSubject
+  def authenticateCredentials(user: String, password: String, rememberMe: Boolean): ResponseFE[AuthenticatedSubject]
+  def authenticateToken(jwtToken: String, refreshToken: Option[String]): ResponseFE[AuthenticatedSubject]
 
-  def authenticate(authToken: JWTAuthenticationToken): Subject
-  def authenticateAsync(authToken: JWTAuthenticationToken): Future[Subject]
+  def impersonateSubjectSync(principal: String, credentials: String): ResponseE[Subject]
+  def impersonateSubject(principal: String, credentials: String): ResponseFE[Subject]
 
-  def isAuthorized(permission: String, subject: Subject): Boolean
-  def isAuthorizedAsync(permission: String, subject: Subject): Future[Boolean]
+  def isAuthorizedSync(subject: Subject, permission: String): Boolean
+  def isAuthorized(subject: Subject, permission: String): Future[Boolean]
 
-  def authenticateCredentials(authToken: UsernamePasswordToken): Subject
-  def authenticateCredentialsAsync(authToken: UsernamePasswordToken): Future[Subject]
+  def isAuthorizedAnySync(subject: Subject, permissions: Set[String]): Boolean
+  def isAuthorizedAny(subject: Subject, permissions: Set[String]): Future[Boolean]
+
+  def isAuthorizedAllSync(subject: Subject, permissions: Set[String]): Boolean
+  def isAuthorizedAll(subject: Subject, permissions: Set[String]): Future[Boolean]
+
+  def invalidate(jwtToken: String, refreshToken: Option[String]): ResponseFE[Unit]
+  def invalidateAll(jwtToken: String): ResponseFE[Unit]
 }

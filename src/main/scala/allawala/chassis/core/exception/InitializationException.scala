@@ -1,6 +1,7 @@
 package allawala.chassis.core.exception
 
 import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import allawala.chassis.core.model.ErrorType
 
 case class InitializationException(
                             override val errorCode: String = "initialization.error",

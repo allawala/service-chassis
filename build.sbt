@@ -26,20 +26,22 @@ libraryDependencies ++= {
   val akkaHttpCorsVersion = "0.2.1"
   val akkaHttpVersion = "10.0.9"
   val akkaHttpCirceVersion = "1.13.0"
-  val circeVersion = "0.8.0"
-  val enumeratumVersion = "1.5.12"
-  val enumeratumCirceVersion = "1.5.14"
+  val circeVersion = "0.7.0"
+  val enumeratumVersion = "1.5.10"
+  val enumeratumCirceVersion = "1.5.10"
   val ficusVersion = "1.4.0"
   val groovyVersion = "2.4.10"
   val guiceVersion = "4.1.0"
-  val jwtCirceVersion = "0.14.0"
+  val jwtCirceVersion = "0.12.1"
   val logbackVersion = "1.2.2"
   val logstashVersion = "4.9"
   val metricsVersion = "3.5.6_a2.4"
+  val mockitoVersion = "2.8.47"
   val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
   val slf4jVersion = "1.7.25"
   val shiroVersion = "1.4.0"
+  val threeTenExtraVersion = "1.2"
 
   Seq(
     // Akka
@@ -85,8 +87,12 @@ libraryDependencies ++= {
     "org.apache.shiro" % "shiro-core" % shiroVersion,
     "org.apache.shiro" % "shiro-guice" % shiroVersion,
 
-    // Test Dependencies
+    // Threeten Extras
+    "org.threeten" % "threeten-extra" % threeTenExtraVersion,
+
+  // Test Dependencies
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
+    "org.mockito" % "mockito-core" % mockitoVersion % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test"
   )
 }
@@ -187,12 +193,8 @@ dockerfile in docker := {
   val artifact: File = assembly.value
   val artifactTargetPath = s"/opt/${name.value}/${artifact.name}"
 
-  /*
-  Using the hseeberger/scala-sbt image as a quick start. This is not tagged and can change plus it uses openjdk so this is not
-  a production ready docker image
-  */
   new Dockerfile {
-    from("hseeberger/scala-sbt")
+    from("hseeberger/scala-sbt:8u141-jdk_2.12.3_0.13.16")
     expose(exposePort)
     copy(artifact, artifactTargetPath)
     entryPoint("java", "-jar", artifactTargetPath)
@@ -242,3 +244,5 @@ import scala.concurrent.duration._
   """.stripMargin
 
 fork in run := true
+// Running `sbt test` hangs without the following line, possibly due to https://github.com/sbt/sbt/issues/3022
+parallelExecution in Test := false

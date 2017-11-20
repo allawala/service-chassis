@@ -1,4 +1,4 @@
-package allawala.chassis.core.exception
+package allawala.chassis.core.model
 
 import enumeratum.{CirceEnum, Enum, EnumEntry}
 

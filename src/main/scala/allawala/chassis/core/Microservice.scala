@@ -1,7 +1,7 @@
 package allawala.chassis.core
 
 import allawala.chassis.core.module.ChassisModule
-import allawala.chassis.http.model.AkkaHttp
+import allawala.chassis.http.service.AkkaHttpService
 import com.google.inject.{Guice, Injector, Module, Stage}
 import net.codingwell.scalaguice.InjectorExtensions._
 
@@ -12,7 +12,7 @@ trait Microservice {
 
 
   def run(): Unit = {
-    val akkaHttp = injector.instance[AkkaHttp]
+    val akkaHttp = injector.instance[AkkaHttpService]
     akkaHttp.run()
   }
 }

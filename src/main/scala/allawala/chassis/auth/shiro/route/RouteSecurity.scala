@@ -2,14 +2,18 @@ package allawala.chassis.auth.shiro.route
 
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.{Directive0, Directive1, Directives}
+import allawala.ResponseFE
 import allawala.chassis.auth.exception.{AuthenticationException, AuthorizationException}
-import allawala.chassis.auth.shiro.model.{JWTAuthenticationToken, PrincipalType}
+import allawala.chassis.auth.shiro.model.AuthenticatedSubject
 import allawala.chassis.auth.shiro.service.ShiroAuthService
+import allawala.chassis.core.rejection.DomainRejection._
 import com.typesafe.scalalogging.StrictLogging
-import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.subject.Subject
 
+import scala.concurrent.Future
+
 trait RouteSecurity extends Directives with StrictLogging {
+  val AccessControlExposeHeader = "Access-Control-Expose-Headers"
   val Authorization = "Authorization"
   val RefreshToken = "Refresh-Token"
   val Bearer = "Bearer"
@@ -17,74 +21,149 @@ trait RouteSecurity extends Directives with StrictLogging {
   def authService: ShiroAuthService
 
   def setAuthorizationHeader(token: String): Directive0 = {
-    respondWithHeader(RawHeader(Authorization, s"$Bearer $token"))
+    val accessControlAccessHeader = RawHeader(AccessControlExposeHeader, Authorization)
+    val authorizationHeader = RawHeader(Authorization, s"$Bearer $token")
+    respondWithHeaders(accessControlAccessHeader, authorizationHeader)
   }
 
-  val authenticated: Directive1[Subject] = {
-    (optionalHeaderValueByName(Authorization) & optionalHeaderValueByName(RefreshToken)).tflatMap {
-      case (authToken, refreshToken) => authToken match {
-        case None => throw AuthenticationException(message = "authorization header not found")
-        case Some(auth) =>
-          if (!auth.startsWith(Bearer)) {
-            throw AuthenticationException(message = "bearer missing from authorization header")
-          }
-          else {
-            val token = auth.split(' ').last
-            val jwtSubject = authService.decodeToken(token, refreshToken)
-            val subject = authService.authenticate(JWTAuthenticationToken(jwtSubject))
-            if (jwtSubject.credentials != token) {
-              // New token was issued due to the presence of a valid refresh token and needs to be sent back as response header
-              setAuthorizationHeader(jwtSubject.credentials) & provide(subject)
-            } else {
-              provide(subject)
-            }
-          }
-      }
+  def setRefreshHeader(refreshToken: Option[String]): Directive0 = {
+    refreshToken match {
+      case Some(rt) =>
+        val accessControlAccessHeader = RawHeader(AccessControlExposeHeader, RefreshToken)
+        val refreshHeader = RawHeader(RefreshToken, rt)
+        respondWithHeaders(accessControlAccessHeader, refreshHeader)
+      case None => pass
     }
   }
 
   val onAuthenticated: Directive1[Subject] = {
-    (optionalHeaderValueByName(Authorization) & optionalHeaderValueByName(RefreshToken)).tflatMap {
-      case (authToken, refreshToken) => authToken match {
-        case None => throw AuthenticationException(message = "authorization header not found")
-        case Some(auth) =>
-          if (!auth.startsWith(Bearer)) {
-            throw AuthenticationException(message = "bearer missing from authorization header")
-          }
-          else {
-            val token = auth.split(' ').last
-            val jwtSubject = authService.decodeToken(token, refreshToken)
-            onSuccess(authService.authenticateAsync(JWTAuthenticationToken(jwtSubject))).flatMap { subject =>
-              if (jwtSubject.credentials != token) {
-                // New token was issued due to the presence of a valid refresh token and needs to be sent back as response header
-                setAuthorizationHeader(jwtSubject.credentials) & provide(subject)
+    (headerValueByName(Authorization) & optionalHeaderValueByName(RefreshToken)).tflatMap {
+      case (authToken, refreshToken) =>
+        if (!authToken.startsWith("Bearer")) {
+          reject(AuthenticationException(message = "Authentication failed", logMap = Map("reason" -> "Missing Bearer")))
+        } else {
+          val jwtToken = authToken.split(' ').last
+          onSuccess(authService.authenticateToken(jwtToken, refreshToken)) flatMap {
+            case Left(e) => reject(e)
+            case Right(authenticatedSubject) =>
+              // new tokens issued
+              if (authenticatedSubject.jwtToken != jwtToken) {
+                authenticated(authenticatedSubject)
               } else {
-                provide(subject)
+                provide(authenticatedSubject.subject)
               }
-            }
           }
+        }
+    }
+  }
+
+  val onInvalidateSession: Directive0 = {
+    (headerValueByName(Authorization) & optionalHeaderValueByName(RefreshToken)).tflatMap {
+      case (authToken, refreshToken) =>
+        if (!authToken.startsWith("Bearer")) {
+          reject(AuthenticationException(message = "Authentication failed", logMap = Map("reason" -> "Missing Bearer")))
+        } else {
+          val jwtToken = authToken.split(' ').last
+          onSuccess(authService.invalidate(jwtToken, refreshToken)) flatMap {
+            case Left(e) => reject(e)
+            case Right(_) => pass
+          }
+        }
+    }
+  }
+
+  val onInvalidateAllSessions: Directive0 = {
+    headerValueByName(Authorization).flatMap { authToken =>
+      if (!authToken.startsWith("Bearer")) {
+        reject(AuthenticationException(message = "Authentication failed", logMap = Map("reason" -> "Missing Bearer")))
+      } else {
+        val jwtToken = authToken.split(' ').last
+        onSuccess(authService.invalidateAll(jwtToken)) flatMap {
+          case Left(e) => reject(e)
+          case Right(_) => pass
+        }
       }
     }
   }
 
-  // TODO see if this can be converted to a Directive0
-  def authorized(permission: String, subject: Subject): Directive1[Boolean] = {
-    if (!authService.isAuthorized(permission, subject)) throw AuthorizationException(message = "unauthorized")
-    provide(true)
-  }
-
-  def onAuthorized(permission: String, subject: Subject): Directive1[Boolean] = {
-    onSuccess(authService.isAuthorizedAsync(permission, subject)).flatMap { authorized =>
-      if (!authorized) throw AuthorizationException(message = "unauthorized")
-      provide(true)
+  def authorized(subject: Subject, permission: String): Directive0 = {
+    if (!authService.isAuthorizedSync(subject, permission)) {
+      reject(AuthorizationException(message = "unauthorized"))
+    }
+    else {
+      pass
     }
   }
 
-  // TODO set refresh token
-  def authenticate(user: String, password: String, rememberMe: Option[Boolean] = None): Directive1[Subject] = {
-    val subject = authService.authenticateCredentials(new UsernamePasswordToken(user, password, rememberMe.getOrElse(false)))
-    val primaryPrincipal = subject.getPrincipals.getPrimaryPrincipal.asInstanceOf[String]
-    val token = authService.generateToken(PrincipalType.User, primaryPrincipal)
-    setAuthorizationHeader(token) & provide(subject)
+  def onAuthorized(subject: Subject, permission: String): Directive0 = {
+    onSuccess(authService.isAuthorized(subject, permission)).flatMap { authorized =>
+      if (!authorized) {
+        reject(AuthorizationException(message = "unauthorized"))
+      }
+      else {
+        pass
+      }
+    }
   }
+
+  def authorizedAny(subject: Subject, permissions: String*): Directive0 = {
+    if (!authService.isAuthorizedAnySync(subject, permissions.toSet)) {
+      reject(AuthorizationException(message = "unauthorized"))
+    } else {
+      pass
+    }
+  }
+
+  def onAuthorizedAny(subject: Subject, permissions: String*): Directive0 = {
+    onSuccess(authService.isAuthorizedAny(subject, permissions.toSet)).flatMap { authorized =>
+      if (!authorized) {
+        reject(AuthorizationException(message = "unauthorized"))
+      } else {
+        pass
+      }
+    }
+  }
+
+  def authorizedAll(subject: Subject, permissions: String*): Directive0 = {
+    if (!authService.isAuthorizedAllSync(subject, permissions.toSet)) {
+      reject(AuthorizationException(message = "unauthorized"))
+    } else {
+      pass
+    }
+  }
+
+  def onAuthorizedAll(subject: Subject, permissions: String*): Directive0 = {
+    onSuccess(authService.isAuthorizedAll(subject, permissions.toSet)).flatMap { authorized =>
+      if (!authorized) {
+        reject(AuthorizationException(message = "unauthorized"))
+      } else {
+        pass
+      }
+    }
+  }
+
+  def onAuthenticate(user: String, password: String, rememberMe: Boolean): Directive1[Subject] = {
+    onAuthenticateWithFailureHandling(user, password, rememberMe) {
+      Future.successful(Right(()))
+    }
+  }
+
+  def onAuthenticateWithFailureHandling(user: String, password: String, rememberMe: Boolean)
+                                       (onFailure: => ResponseFE[Unit]): Directive1[Subject] = {
+    onSuccess(authService.authenticateCredentials(user, password, rememberMe)).flatMap {
+      case Left(ex) => onSuccess(onFailure) flatMap {
+        case Left(e) => reject(e) // Something in error handling itself gone wrong
+        case Right(_) => reject(AuthenticationException(message = "authentication failed", cause = ex))
+      }
+      case Right(authenticatedSubject) => authenticated(authenticatedSubject)
+    }
+  }
+
+  private def authenticated(authenticatedSubject: AuthenticatedSubject): Directive1[Subject] = {
+    setAuthorizationHeader(authenticatedSubject.jwtToken) &
+      setRefreshHeader(authenticatedSubject.refreshToken) &
+      provide(authenticatedSubject.subject)
+  }
+
+  val jwtToken: Directive1[String] = headerValueByName(Authorization).map(header => header.split(' ').last)
 }
