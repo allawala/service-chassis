@@ -40,7 +40,7 @@ trait RouteSecurity extends Directives with StrictLogging {
     (headerValueByName(Authorization) & optionalHeaderValueByName(RefreshToken)).tflatMap {
       case (authToken, refreshToken) =>
         if (!authToken.startsWith("Bearer")) {
-          reject(AuthenticationException(message = "Authentication failed", logMap = Map("reason" -> "Missing Bearer")))
+          reject(AuthenticationException(logMap = Map("reason" -> "Missing Bearer")))
         } else {
           val jwtToken = authToken.split(' ').last
           onSuccess(authService.authenticateToken(jwtToken, refreshToken)) flatMap {
@@ -61,7 +61,7 @@ trait RouteSecurity extends Directives with StrictLogging {
     (headerValueByName(Authorization) & optionalHeaderValueByName(RefreshToken)).tflatMap {
       case (authToken, refreshToken) =>
         if (!authToken.startsWith("Bearer")) {
-          reject(AuthenticationException(message = "Authentication failed", logMap = Map("reason" -> "Missing Bearer")))
+          reject(AuthenticationException(logMap = Map("reason" -> "Missing Bearer")))
         } else {
           val jwtToken = authToken.split(' ').last
           onSuccess(authService.invalidate(jwtToken, refreshToken)) flatMap {
@@ -75,7 +75,7 @@ trait RouteSecurity extends Directives with StrictLogging {
   val onInvalidateAllSessions: Directive0 = {
     headerValueByName(Authorization).flatMap { authToken =>
       if (!authToken.startsWith("Bearer")) {
-        reject(AuthenticationException(message = "Authentication failed", logMap = Map("reason" -> "Missing Bearer")))
+        reject(AuthenticationException(logMap = Map("reason" -> "Missing Bearer")))
       } else {
         val jwtToken = authToken.split(' ').last
         onSuccess(authService.invalidateAll(jwtToken)) flatMap {
@@ -88,7 +88,7 @@ trait RouteSecurity extends Directives with StrictLogging {
 
   def authorized(subject: Subject, permission: String): Directive0 = {
     if (!authService.isAuthorizedSync(subject, permission)) {
-      reject(AuthorizationException(message = "unauthorized"))
+      reject(AuthorizationException())
     }
     else {
       pass
@@ -98,7 +98,7 @@ trait RouteSecurity extends Directives with StrictLogging {
   def onAuthorized(subject: Subject, permission: String): Directive0 = {
     onSuccess(authService.isAuthorized(subject, permission)).flatMap { authorized =>
       if (!authorized) {
-        reject(AuthorizationException(message = "unauthorized"))
+        reject(AuthorizationException())
       }
       else {
         pass
@@ -108,7 +108,7 @@ trait RouteSecurity extends Directives with StrictLogging {
 
   def authorizedAny(subject: Subject, permissions: String*): Directive0 = {
     if (!authService.isAuthorizedAnySync(subject, permissions.toSet)) {
-      reject(AuthorizationException(message = "unauthorized"))
+      reject(AuthorizationException())
     } else {
       pass
     }
@@ -117,7 +117,7 @@ trait RouteSecurity extends Directives with StrictLogging {
   def onAuthorizedAny(subject: Subject, permissions: String*): Directive0 = {
     onSuccess(authService.isAuthorizedAny(subject, permissions.toSet)).flatMap { authorized =>
       if (!authorized) {
-        reject(AuthorizationException(message = "unauthorized"))
+        reject(AuthorizationException())
       } else {
         pass
       }
@@ -126,7 +126,7 @@ trait RouteSecurity extends Directives with StrictLogging {
 
   def authorizedAll(subject: Subject, permissions: String*): Directive0 = {
     if (!authService.isAuthorizedAllSync(subject, permissions.toSet)) {
-      reject(AuthorizationException(message = "unauthorized"))
+      reject(AuthorizationException())
     } else {
       pass
     }
@@ -135,7 +135,7 @@ trait RouteSecurity extends Directives with StrictLogging {
   def onAuthorizedAll(subject: Subject, permissions: String*): Directive0 = {
     onSuccess(authService.isAuthorizedAll(subject, permissions.toSet)).flatMap { authorized =>
       if (!authorized) {
-        reject(AuthorizationException(message = "unauthorized"))
+        reject(AuthorizationException())
       } else {
         pass
       }
@@ -153,7 +153,7 @@ trait RouteSecurity extends Directives with StrictLogging {
     onSuccess(authService.authenticateCredentials(user, password, rememberMe)).flatMap {
       case Left(ex) => onSuccess(onFailure) flatMap {
         case Left(e) => reject(e) // Something in error handling itself gone wrong
-        case Right(_) => reject(AuthenticationException(message = "authentication failed", cause = ex))
+        case Right(_) => reject(AuthenticationException(cause = ex))
       }
       case Right(authenticatedSubject) => authenticated(authenticatedSubject)
     }

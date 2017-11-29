@@ -4,12 +4,14 @@ import javax.inject.{Inject, Provider}
 
 import akka.http.scaladsl.server.{Directive, RejectionHandler, Route}
 import allawala.chassis.config.model.CorsConfig
+import allawala.chassis.i18n.service.I18nService
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
 class Routes @Inject()(
                         val securityManager: SecurityManager,
                         val routeRegistryProvider: Provider[RouteRegistry],
-                        val corsConfig: CorsConfig
+                        val corsConfig: CorsConfig,
+                        val i18nService: I18nService
                       ) extends RouteWrapper with CorsSupport {
 
   override val allowedOrigins: Seq[String] = corsConfig.allowedOrigins

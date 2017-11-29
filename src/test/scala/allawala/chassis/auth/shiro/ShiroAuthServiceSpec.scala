@@ -107,7 +107,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
       new UserNamePasswordAuthFixture {
         tokenStorageService.storeTokens(
           equ(PrincipalType.User), equ(user), equ(jwtToken), any[Option[RefreshToken]]
-        ) returns Future.successful(Left(ServerException(message = "failure")))
+        ) returns Future.successful(Left(ServerException()))
 
         val result = Await.result(service.authenticateCredentials(user, password, rememberMe = true), timeout)
 
@@ -161,8 +161,8 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
 
     "fail to authenticate an invalid jwt token" in {
       new JWTTokenAuthFixture {
-        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException(message = "failure"))
-        jwtTokenService.decodeExpiredToken(jwtToken) returns Left(ServerException(message = "failure"))
+        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException())
+        jwtTokenService.decodeExpiredToken(jwtToken) returns Left(ServerException())
 
         val result = Await.result(service.authenticateToken(jwtToken, None), timeout)
 
@@ -174,7 +174,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
 
     "fail to authenticate (expired jwt token, no refresh token)" in {
       new JWTTokenAuthFixture {
-        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException(message = "failure"))
+        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException())
         jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
         tokenStorageService.removeTokens(
           equ(PrincipalType.User), equ(user), equ(jwtToken), equ(None)
@@ -190,7 +190,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
 
     "successfully authenticate (expired jwt token, valid refresh token) and reissues tokens" in {
       new JWTTokenAuthFixture {
-        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException(message = "failure"))
+        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException())
         jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
         refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns Some(("selector", "validator"))
         tokenStorageService.lookupTokens(equ("selector")) returns Future.successful(Right((jwtToken, refreshToken)))
@@ -214,7 +214,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
     "fail to authenticate (expired jwt token, expired refresh token)" in {
       new JWTTokenAuthFixture {
         val expiredRefreshToken = refreshToken.copy(expires = earlier)
-        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException(message = "failure"))
+        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException())
         jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
         refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns Some(("selector", "validator"))
         tokenStorageService.lookupTokens(equ("selector")) returns Future.successful(Right((jwtToken, expiredRefreshToken)))
@@ -237,7 +237,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
 
     "fail to authenticate (expired jwt token, valid refresh token) if shiro auth fails" in {
       new JWTTokenAuthFixture {
-        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException(message = "failure"))
+        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException())
         jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
         refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns Some(("selector", "validator"))
         tokenStorageService.lookupTokens(equ("selector")) returns Future.successful(Right((jwtToken, refreshToken)))
@@ -256,7 +256,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
 
     "fail to authenticate (expired jwt token, refresh token) if refresh token cannot be decoded" in {
       new JWTTokenAuthFixture {
-        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException(message = "failure"))
+        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException())
         jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
         refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns None
         tokenStorageService.removeTokens(
@@ -280,10 +280,10 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
 
     "fail to authenticate (expired jwt token, refresh token) if refresh token cannot be looked up" in {
       new JWTTokenAuthFixture {
-        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException(message = "failure"))
+        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException())
         jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
         refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns Some(("selector", "validator"))
-        tokenStorageService.lookupTokens(equ("selector")) returns Future.successful(Left(ServerException(message ="fail")))
+        tokenStorageService.lookupTokens(equ("selector")) returns Future.successful(Left(ServerException()))
         tokenStorageService.removeTokens(
           equ(PrincipalType.User), equ(user), equ(jwtToken), equ(None)
         ) returns Future.successful(Right(()))
@@ -304,7 +304,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
 
     "fail to authenticate (expired jwt token, valid refresh token) if refresh token hash does not match" in {
       new JWTTokenAuthFixture {
-        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException(message = "failure"))
+        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException())
         jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
         refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns Some(("selector", "validator"))
         tokenStorageService.lookupTokens(equ("selector")) returns Future.successful(Right((jwtToken, refreshToken)))
@@ -328,7 +328,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
 
     "fail to authenticate (expired jwt token, valid refresh token) if token rotation fails" in {
       new JWTTokenAuthFixture {
-        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException(message = "failure"))
+        jwtTokenService.decodeToken(jwtToken) returns Left(ServerException())
         jwtTokenService.decodeExpiredToken(jwtToken) returns Right(jwtSubject)
         refreshTokenService.decodeSelectorAndToken(equ(encodedRefreshToken)) returns Some(("selector", "validator"))
         tokenStorageService.lookupTokens(equ("selector")) returns Future.successful(Right((jwtToken, refreshToken)))
@@ -337,7 +337,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
         jwtTokenService.generateToken(equ(PrincipalType.User), equ(user), equ(true)) returns newJwtToken
         tokenStorageService.rotateTokens(
           equ(PrincipalType.User), equ(user), equ(jwtToken), equ(newJwtToken), equ(refreshToken), equ(newRefreshToken)
-        ) returns Future.successful(Left(ServerException(message = "failure")))
+        ) returns Future.successful(Left(ServerException()))
 
         val result = Await.result(service.authenticateToken(jwtToken, Some(encodedRefreshToken)), timeout)
 

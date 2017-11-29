@@ -1,7 +1,7 @@
 package allawala.chassis.core
-import com.google.inject.Module
+import allawala.chassis.core.module.ChassisModule
 
 object Boot extends Microservice with App {
-  override def getModules: List[Module] = List.empty[Module]
+  override def module: ChassisModule = new ChassisModule() {}
   run()
 }

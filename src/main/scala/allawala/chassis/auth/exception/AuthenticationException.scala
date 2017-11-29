@@ -6,9 +6,8 @@ import allawala.chassis.core.model.ErrorType
 
 case class AuthenticationException (
                                 override val errorCode: String = "authentication.error",
-                                override val message: String = "authentication exception",
                                 override val cause: Throwable = None.orNull,
-                                override val errorMap: Map[String, String] = Map.empty[String, String],
+                                override val messageParameters: Seq[AnyRef] = Seq.empty,
                                 override val logMap: Map[String, AnyRef] = Map.empty[String, AnyRef]
                               ) extends DomainException {
 
