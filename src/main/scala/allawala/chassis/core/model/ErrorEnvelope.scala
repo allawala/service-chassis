@@ -8,5 +8,5 @@ case class ErrorEnvelope(
                           correlationId: String,
                           errorCode: String,
                           errorMessage: String,
-                          payload: Map[String, String] = Map.empty[String, String]
+                          details: Map[String, List[ValidationEnvelope]] = Map.empty
                         )

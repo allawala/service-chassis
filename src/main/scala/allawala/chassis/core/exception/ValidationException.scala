@@ -9,11 +9,8 @@ case class ValidationException(
                                 validationErrors: NonEmptyList[ValidationError],
                                 modelName: Option[String] = None
                               ) extends DomainException {
-  private val name = modelName.getOrElse("model")
   override val statusCode: StatusCode = StatusCodes.BadRequest
-  override val errorCode: String = s"${name.toLowerCase}.validation.failed"
-  override val message: String = s"$name validation failed"
-  override val errorMap: Map[String, String] = validationErrors.map(e => e.code -> e.message).toList.toMap
+  override val errorCode: String = s"validation.error"
   override val errorType: ErrorType = ErrorType.ValidationError
   override val cause: Throwable = None.orNull
 }

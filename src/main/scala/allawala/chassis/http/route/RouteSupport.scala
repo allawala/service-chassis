@@ -43,7 +43,7 @@ trait RouteSupport
     import io.circe.generic.auto._
     extractRequestContext { requestContext =>
       logError(requestContext.request, ex)
-      complete(statusCode -> ex.toErrorEnvelope(MDC.get(XCorrelationId)))
+      complete(statusCode -> toErrorEnvelope(requestContext.request, MDC.get(XCorrelationId), ex))
     }
   }
 }

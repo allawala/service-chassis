@@ -82,7 +82,7 @@ class ShiroAuthServiceImpl @Inject()(
     // Since we are removing the token, we dont care if its expired
     jwtTokenService.decodeExpiredToken(jwtToken) match {
       case Left(e) =>
-        Future.successful(Left(AuthenticationException(message = "Authentication failed", cause = e)))
+        Future.successful(Left(AuthenticationException(cause = e)))
       case Right(jwtSubject) =>
         val selectorToRemove = refreshToken match {
           case Some(encodedRefreshToken) =>
@@ -101,7 +101,7 @@ class ShiroAuthServiceImpl @Inject()(
     // Since we are removing the token, we dont care if its expired
     jwtTokenService.decodeExpiredToken(jwtToken) match {
       case Left(e) =>
-        Future.successful(Left(AuthenticationException(message = "Authentication failed", cause = e)))
+        Future.successful(Left(AuthenticationException(cause = e)))
       case Right(jwtSubject) =>
         tokenStorageService.removeAllTokens(jwtSubject.principalType, jwtSubject.principal)
     }
@@ -125,10 +125,10 @@ class ShiroAuthServiceImpl @Inject()(
       case Success(authenticatedSubject) =>
         // If the authentication is successful, store the new tokens
         tokenStorageService.storeTokens(PrincipalType.User, user, jwtToken, refreshToken) map {
-          case Left(e) => Left(AuthenticationException(message = "Authentication failed", cause = e))
+          case Left(e) => Left(AuthenticationException(cause = e))
           case Right(_) => Right(authenticatedSubject)
         }
-      case Failure(e) => Future.successful(Left(AuthenticationException(message = "Authentication failed", cause = e)))
+      case Failure(e) => Future.successful(Left(AuthenticationException(cause = e)))
     }
   }
 
@@ -138,7 +138,7 @@ class ShiroAuthServiceImpl @Inject()(
       case Left(e) =>
         // Possibly expired
         jwtTokenService.decodeExpiredToken(jwtToken) match {
-          case Left(ex) => Future.successful(Left(AuthenticationException(message = "Authentication failed", cause = ex)))
+          case Left(ex) => Future.successful(Left(AuthenticationException(cause = ex)))
           case Right(expiredJwtSubject) if refreshToken.isDefined =>
             // Expired token but we have a reissue token
             reissueTokensAndAuthenticate(expiredJwtSubject, refreshToken.get)
@@ -206,8 +206,7 @@ class ShiroAuthServiceImpl @Inject()(
           existingRefreshToken, refreshToken
         ) map {
           case Left(e) => Left(
-            AuthenticationException(
-              message = "Authentication failed", logMap = Map("reason" -> "token rotation failed"), cause = e))
+            AuthenticationException(logMap = Map("reason" -> "token rotation failed"), cause = e))
           case Right(_) => Right(authenticatedSubject)
         }
     }
@@ -220,7 +219,7 @@ class ShiroAuthServiceImpl @Inject()(
       subject
     } match {
       case Success(subject) => Right(f(subject))
-      case Failure(e) => Left(AuthenticationException(message = "Authentication failed", cause = e))
+      case Failure(e) => Left(AuthenticationException(cause = e))
     }
   }
 
@@ -236,17 +235,13 @@ class ShiroAuthServiceImpl @Inject()(
 
     tokenStorageService.removeTokens(principalType, principal, expiredJwtToken, expiredRefreshToken.map(_.selector)) map {
       case Left(e) =>
-        Left(AuthenticationException(
-          message = "Authentication failed",
-          cause = e,
-          logMap = Map("reason" -> "expired token removal failed"))
-        )
+        Left(AuthenticationException(cause = e, logMap = Map("reason" -> "expired token removal failed")))
       case Right(_) =>
         cause match {
           case Some(e) =>
-            Left(AuthenticationException(message = "Authentication failed", cause = e, logMap = Map("reason" -> reason)))
+            Left(AuthenticationException(cause = e, logMap = Map("reason" -> reason)))
           case None =>
-            Left(AuthenticationException(message = "Authentication failed", logMap = Map("reason" -> reason)))
+            Left(AuthenticationException(logMap = Map("reason" -> reason)))
         }
     }
   }

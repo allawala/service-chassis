@@ -19,7 +19,7 @@ class ShiroLifecycleListener @Inject()(
     Future {
       Try {
         SecurityUtils.setSecurityManager(securityManager)
-      }.toEither.left.map(e => InitializationException(message = "shiro initialization failed", cause = e))
+      }.toEither.left.map(e => InitializationException(logMap = Map("listener" -> "ShiroLifecycleListener"), cause = e))
     }
   }
 }

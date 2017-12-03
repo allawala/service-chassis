@@ -1,6 +1,6 @@
 package allawala.chassis.config.module
 
-import allawala.chassis.config.model.{Auth, BaseConfig, CorsConfig, Environment}
+import allawala.chassis.config.model._
 import com.google.inject.{AbstractModule, Provides, Singleton}
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus
@@ -53,6 +53,12 @@ object ConfigModule {
   @Singleton
   def getCorsConfig(config: BaseConfig): CorsConfig = {
     config.corsConfig
+  }
+
+  @Provides
+  @Singleton
+  def getLanguageConfig(config: BaseConfig): LanguageConfig = {
+    config.languageConfig
   }
 
   private def loadEnvConfig = {

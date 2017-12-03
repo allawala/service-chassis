@@ -1,11 +1,14 @@
 package allawala.chassis.health.route
 
+import javax.inject.Inject
+
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Route
 import allawala.BuildInfo
 import allawala.chassis.health.HealthCheckSupport
 import allawala.chassis.health.model.{BuildDetails, HealthCheckResult, HealthResult}
 import allawala.chassis.http.route.{HasRoute, RouteSupport}
+import allawala.chassis.i18n.service.I18nService
 import io.circe.generic.auto._
 
 import scala.collection.JavaConverters._
@@ -13,7 +16,7 @@ import scala.collection.JavaConverters._
 /*
   NOTE: BuildInfo object is generated on compilation so standalone sbt clean will cause IDE to show errors
  */
-class HealthRoute extends HasRoute with RouteSupport with HealthCheckSupport {
+class HealthRoute @Inject()(override val i18nService: I18nService) extends HasRoute with RouteSupport with HealthCheckSupport {
 
   override def route: Route = get {
     path("health") {
