@@ -20,7 +20,8 @@ trait RouteLogging extends StrictLogging {
       errorCode = e.errorCode,
       errorMessage = i18nService.getDefaultLocale(e.errorCode, e.messageParameters), // logging is always be in english
       thread = e.thread,
-      payload = e.logMap.mapValues(_.toString)
+      payload = e.logMap.mapValues(_.toString),
+      validationPayload = getErrorPayload(request, e)
     )
 
     logger.error(log.asJson.noSpaces, e)

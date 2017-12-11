@@ -10,5 +10,6 @@ case class HttpErrorLog(
                          errorCode: String,
                          errorMessage: String,
                          thread: Option[String],
-                         payload: Map[String, String] = Map.empty[String, String]
+                         payload: Map[String, String] = Map.empty[String, String],
+                         validationPayload: Map[String, List[ValidationEnvelope]] = Map.empty[String, List[ValidationEnvelope]]
                        )
