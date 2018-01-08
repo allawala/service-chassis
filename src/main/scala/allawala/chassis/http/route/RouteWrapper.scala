@@ -50,7 +50,7 @@ trait RouteWrapper extends RouteSupport {
       fail(ValidationException(NonEmptyList.fromListUnsafe(requiredFields)))
   }.result()
 
-  val correlationHeader: Directive1[String] =
+  def correlationHeader: Directive1[String] =
     optionalHeaderValueByName(XCorrelationId) map { optId =>
       val id = optId.getOrElse(UUID.randomUUID().toString)
       MDC.put(XCorrelationId, id)
