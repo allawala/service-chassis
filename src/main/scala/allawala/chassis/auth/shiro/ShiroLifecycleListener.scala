@@ -22,4 +22,12 @@ class ShiroLifecycleListener @Inject()(
       }.toEither.left.map(e => InitializationException(logMap = Map("listener" -> "ShiroLifecycleListener"), cause = e))
     }
   }
+
+  override def postStart(): Future[Either[InitializationException, Unit]] = {
+    Future.successful(Right(()))
+  }
+
+  override def preStop(): Future[Either[InitializationException, Unit]] = {
+    Future.successful(Right(()))
+  }
 }
