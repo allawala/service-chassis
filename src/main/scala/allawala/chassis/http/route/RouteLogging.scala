@@ -1,11 +1,14 @@
 package allawala.chassis.http.route
 
 import akka.http.scaladsl.model.HttpRequest
-import allawala.chassis.core.exception.DomainException
-import allawala.chassis.core.model.HttpErrorLog
+import allawala.chassis.core.exception.{DomainException, ValidationException}
+import allawala.chassis.core.model.{ErrorEnvelope, HttpErrorLog, ValidationEnvelope}
+import allawala.chassis.i18n.service.I18nService
 import com.typesafe.scalalogging.StrictLogging
 
 trait RouteLogging extends StrictLogging {
+  def i18nService: I18nService
+
   def logError(request: HttpRequest, e: DomainException): Unit = {
     import io.circe.generic.auto._
     import io.circe.syntax._
@@ -15,11 +18,33 @@ trait RouteLogging extends StrictLogging {
       uri = request.uri.toString(),
       errorType = e.errorType,
       errorCode = e.errorCode,
-      errorMessage = e.message,
+      errorMessage = i18nService.getDefaultLocale(e.errorCode, e.messageParameters), // logging is always be in english
       thread = e.thread,
-      payload = e.errorMap ++ e.logMap.mapValues(_.toString)
+      payload = e.logMap.mapValues(_.toString),
+      validationPayload = getErrorPayload(request, e)
     )
 
     logger.error(log.asJson.noSpaces, e)
+  }
+
+  def toErrorEnvelope(request: HttpRequest, correlationId: String, e: DomainException): ErrorEnvelope = ErrorEnvelope(
+    errorType = e.errorType,
+    correlationId = correlationId,
+    errorCode = e.errorCode,
+    errorMessage = i18nService.get(request, e.errorCode, e.messageParameters),
+    details = getErrorPayload(request, e)
+  )
+
+  private def getErrorPayload(request: HttpRequest, e: DomainException) = {
+    e match {
+      case ve: ValidationException =>
+        ve.validationErrors.toList.groupBy(_.field).mapValues { grouped =>
+          grouped map { g =>
+            val message = i18nService.get(request, g.code, g.parameters)
+            ValidationEnvelope(g.code, message)
+          }
+        }
+      case _ => Map.empty[String, List[ValidationEnvelope]]
+    }
   }
 }

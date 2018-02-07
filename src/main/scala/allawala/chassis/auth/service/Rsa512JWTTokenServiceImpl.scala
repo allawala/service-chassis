@@ -65,7 +65,7 @@ class Rsa512JWTTokenServiceImpl @Inject()(
   override def decodeToken(token: String): Either[DomainException, JWTSubject] = {
     JwtCirce.decodeJson(token, auth.rsa.publicKey, Seq(jwtAlgorithm)) match {
       case Success(json) => decodeJWTSubject(json, token)
-      case Failure(e) => Left(ServerException(message = "Invalid token", cause = e))
+      case Failure(e) => Left(ServerException("token.invalid", cause = e))
     }
   }
 
@@ -73,14 +73,14 @@ class Rsa512JWTTokenServiceImpl @Inject()(
     // Ignoring the expiration when decoding
     JwtCirce.decodeJson(token, auth.rsa.publicKey, Seq(jwtAlgorithm), JwtOptions(expiration = false)) match {
       case Success(json) => decodeJWTSubject(json, token)
-      case Failure(e) => Left(ServerException(message = "Invalid token", cause = e))
+      case Failure(e) => Left(ServerException("token.invalid", cause = e))
     }
   }
 
   private def decodeJWTSubject(json: Json, token: String) = {
     getSubjectDetails(json) match {
       case Some((typ, sub)) => Right(JWTSubject(PrincipalType.withName(typ), sub, token))
-      case _ => Left(ServerException(message = "Invalid token: missing either typ or sub"))
+      case _ => Left(ServerException("token.invalid", logMap = Map("reason" -> "missing either typ or sub")))
     }
   }
 

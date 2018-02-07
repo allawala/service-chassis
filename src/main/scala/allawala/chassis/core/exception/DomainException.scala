@@ -1,7 +1,7 @@
 package allawala.chassis.core.exception
 
 import akka.http.scaladsl.model.StatusCode
-import allawala.chassis.core.model.{ErrorEnvelope, ErrorType}
+import allawala.chassis.core.model.ErrorType
 
 trait DomainException extends Exception {
   def statusCode: StatusCode
@@ -12,13 +12,11 @@ trait DomainException extends Exception {
 
   def errorCode: String
 
-  def message: String
-
   /**
-    *   errorMap: any key value pair that needs to be passed as part of the error response in the [[allawala.chassis.core.model.ErrorEnvelope]] as well as
-    *   logged as part of the [[allawala.chassis.core.model.HttpErrorLog]]
+    *
+    * messageParameters: values to be substituted in the messages file
     */
-  def errorMap: Map[String, String] = Map.empty[String, String]
+  def messageParameters: Seq[AnyRef] = Seq.empty
 
   /**
     *   logMap: any key value pair that need to be logged as part of the [[allawala.chassis.core.model.HttpErrorLog]] but is not required to be part of the
@@ -33,15 +31,7 @@ trait DomainException extends Exception {
   */
   val thread: Option[String] = Some(Thread.currentThread().getName)
 
-  override def getMessage: String = message
+  override def getMessage: String = Option(cause).map(_.getMessage).getOrElse(errorCode)
 
   override def getCause: Throwable = cause
-
-  def toErrorEnvelope(correlationId: String): ErrorEnvelope = ErrorEnvelope(
-    errorType = errorType,
-    correlationId = correlationId,
-    errorCode = errorCode,
-    errorMessage = message,
-    payload = errorMap
-  )
 }

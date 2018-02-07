@@ -26,6 +26,7 @@ libraryDependencies ++= {
   val akkaHttpCorsVersion = "0.2.1"
   val akkaHttpVersion = "10.0.9"
   val akkaHttpCirceVersion = "1.13.0"
+  val beanUtilsVersion = "1.9.3"
   val circeVersion = "0.7.0"
   val enumeratumVersion = "1.5.10"
   val enumeratumCirceVersion = "1.5.10"
@@ -37,6 +38,7 @@ libraryDependencies ++= {
   val logstashVersion = "4.9"
   val metricsVersion = "3.5.6_a2.4"
   val mockitoVersion = "2.8.47"
+  val scalaI18nVersion = "1.0.2"
   val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
   val slf4jVersion = "1.7.25"
@@ -47,6 +49,9 @@ libraryDependencies ++= {
     // Akka
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
     "ch.megard" %% "akka-http-cors" % akkaHttpCorsVersion,
+
+    // BeanUtils
+    "commons-beanutils" % "commons-beanutils" % beanUtilsVersion,
 
     // Config
     "com.iheart" %% "ficus" % ficusVersion,
@@ -90,7 +95,10 @@ libraryDependencies ++= {
     // Threeten Extras
     "org.threeten" % "threeten-extra" % threeTenExtraVersion,
 
-  // Test Dependencies
+    // i18n
+    "com.osinka.i18n" %% "scala-i18n" % scalaI18nVersion,
+
+    // Test Dependencies
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
     "org.mockito" % "mockito-core" % mockitoVersion % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test"

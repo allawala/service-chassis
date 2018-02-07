@@ -1,0 +1,14 @@
+authentication.error=authentication failure
+authorization.error=unauthorized
+initialization.error=initialization failure
+invalid.request=invalid request
+server.error=server error
+token.invalid=invalid token
+unexpected.error=unexpected error
+validation.error=validation failure
+validation.error.required=required
+validation.error.unexpected=unexpected
+validation.error.blank=cannot be blank
+validation.error.length.min=length should be least at least {0} characters
+validation.error.length.max=length should be at most {0} characters
+validation.error.length=length should be between {0} and {1} characters

@@ -21,13 +21,7 @@ trait RouteWrapper extends RouteSupport {
       // This can happen on a Future.failed { with some domain exception}
       case e: DomainException => fail(e)
       case e: IllegalArgumentException => fail(BadRequest, UnexpectedException(errorCode = "invalid.request", e))
-      case e: ShiroAuthenticationException =>
-        extractRequest { request =>
-          val ae = AuthenticationException(message = e.getMessage, cause = e)
-          logError(request, ae)
-          // We do not want to expose the actual reason behind the authenticaion failure, we just need to log it
-          complete(ae.statusCode -> ae.copy(message = "authentication failed").toErrorEnvelope(MDC.get(XCorrelationId)))
-        }
+      case e: ShiroAuthenticationException => fail(AuthenticationException(cause = e))
       case e: NoSuchElementException =>
         // For akka http cors. Ignore logging
         complete(NotFound -> e.getMessage)
@@ -56,7 +50,7 @@ trait RouteWrapper extends RouteSupport {
       fail(ValidationException(NonEmptyList.fromListUnsafe(requiredFields)))
   }.result()
 
-  val correlationHeader: Directive1[String] =
+  def correlationHeader: Directive1[String] =
     optionalHeaderValueByName(XCorrelationId) map { optId =>
       val id = optId.getOrElse(UUID.randomUUID().toString)
       MDC.put(XCorrelationId, id)
