@@ -11,7 +11,7 @@ import allawala.chassis.core.exception.InitializationException
 import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class AkkaHttpService @Inject()(
@@ -73,6 +73,8 @@ class AkkaHttpService @Inject()(
     } {
       unbindAndTerminate(binding)
     }
+
+    Await.result(actorSystem.whenTerminated, baseConfig.awaitTermination)
   }
 
   private def printLogbackConfig() = {
@@ -91,6 +93,7 @@ class AkkaHttpService @Inject()(
       case Success(results) =>
         val failed: Seq[Either[InitializationException, Unit]] = results.filter(_.isLeft)
         if (failed.isEmpty) {
+          logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] $name SUCCESS ****")
           onSuccess
         } else {
           failed.map(_.left).map(_.get).foreach(ex => logger.error(ex, ex.getMessage))
