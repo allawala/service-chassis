@@ -93,7 +93,7 @@ class AkkaHttpService @Inject()(
       case Success(results) =>
         val failed: Seq[Either[InitializationException, Unit]] = results.filter(_.isLeft)
         if (failed.isEmpty) {
-          logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] $name SUCCESS ****")
+          logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] $name SUCCESS ****")
           onSuccess
         } else {
           failed.map(_.left).map(_.get).foreach(ex => logger.error(ex, ex.getMessage))
