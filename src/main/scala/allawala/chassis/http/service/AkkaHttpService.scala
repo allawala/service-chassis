@@ -3,13 +3,14 @@ package allawala.chassis.http.service
 import javax.inject.{Inject, Named, Provider}
 
 import akka.actor.ActorSystem
-import akka.event.LoggingAdapter
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import allawala.chassis.config.model.{BaseConfig, Environment}
 import allawala.chassis.core.exception.InitializationException
+import allawala.chassis.core.util.LogWrapper
 import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
+import allawala.chassis.i18n.service.I18nService
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -18,13 +19,13 @@ class AkkaHttpService @Inject()(
                                  val baseConfig: BaseConfig,
                                  val routes: Routes,
                                  val environment: Environment,
-                                 val logger: LoggingAdapter,
-                                 val lifecycleAwareRegistryProvider: Provider[LifecycleAwareRegistry]
+                                 val lifecycleAwareRegistryProvider: Provider[LifecycleAwareRegistry],
+                                 override val i18nService: I18nService
                                )(
                                  implicit val actorSystem: ActorSystem,
                                  implicit val actorMaterializer: ActorMaterializer,
                                  @Named("default-dispatcher") implicit val ec: ExecutionContext
-                               ) {
+                               ) extends LogWrapper {
 
   def run(): Unit = {
     executeLifeCycleEventsAndThen("PRE START", Future.sequence(lifecycleAwareRegistryProvider.get().get().map(_.preStart()))) {
@@ -55,7 +56,7 @@ class AkkaHttpService @Inject()(
         }
       }
       case Failure(e) =>
-        logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] FAILED TO START **** ")
+        logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] FAILED TO START **** ", e)
         actorSystem.terminate()
     }
   }
@@ -96,12 +97,12 @@ class AkkaHttpService @Inject()(
           logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] $name SUCCESS ****")
           onSuccess
         } else {
-          failed.map(_.left).map(_.get).foreach(ex => logger.error(ex, ex.getMessage))
+          failed.map(_.left).map(_.get).foreach(ex => logIt(ex))
           logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] $name FAILURE ****")
           onFailure
         }
       case Failure(e) =>
-        logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] $name FAILURE **** ")
+        logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] $name FAILURE **** ", e)
         onFailure
     }
   }
