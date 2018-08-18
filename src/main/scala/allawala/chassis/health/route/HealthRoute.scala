@@ -1,7 +1,5 @@
 package allawala.chassis.health.route
 
-import javax.inject.Inject
-
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Route
 import allawala.BuildInfo
@@ -10,6 +8,7 @@ import allawala.chassis.health.model.{BuildDetails, HealthCheckResult, HealthRes
 import allawala.chassis.http.route.{HasRoute, RouteSupport}
 import allawala.chassis.i18n.service.I18nService
 import io.circe.generic.auto._
+import javax.inject.Inject
 
 import scala.collection.JavaConverters._
 
@@ -41,10 +40,24 @@ class HealthRoute @Inject()(override val i18nService: I18nService) extends HasRo
     }
 
     if (detailed) {
-      val buildDetails = BuildDetails(BuildInfo.name, BuildInfo.version, BuildInfo.builtAtString, BuildInfo.gitCurrentBranch, BuildInfo.gitHeadCommit)
+      val buildDetails = BuildDetails(
+        getOrNone(BuildInfo.name),
+        getOrNone(BuildInfo.version),
+        getOrNone(BuildInfo.builtAtString),
+        getOrNone(BuildInfo.gitCurrentBranch),
+        getOrNone(BuildInfo.gitHeadCommit).flatten
+      )
       complete(serviceStatus -> HealthResult(buildDetails, result))
     } else {
       complete(serviceStatus)
+    }
+  }
+
+  private def getOrNone[T](evalulate: => T) = {
+    try {
+      Some(evalulate)
+    } catch {
+      case t: Throwable => None
     }
   }
 }
