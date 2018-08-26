@@ -1,0 +1,15 @@
+#intellij
+/.idea
+/.idea_modules
+/*.iml
+/out
+/.project
+/.classpath
+/bin
+/RUNNING_PID
+/.settings
+
+#Jekyll
+/_site/
+/Gemfile
+/Gemfile.lock
