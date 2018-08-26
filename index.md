@@ -13,7 +13,7 @@ A slightly opinionated services chassis that uses
 
 ---
 
-## Quick Start
+## QUICK START
 
 Add resolvers to **build.sbt**
 
@@ -1144,6 +1144,6 @@ TODO
 
 ---
 
-## ACKNOWLEDGEMEMTS
+## ACKNOWLEDGEMENTS
 
 TODO
