@@ -4,12 +4,16 @@ title: Service Chassis
 ---
 ## INTRODUCTION
 
-A slightly opinionated services chassis that uses
+A slightly opinionated services chassis that lets you bootstrap your services and applications quickly by providing support for
+authentication, authorization, internationalization etc.
+
+It uses
 
 - Guice for DI
 - Apache Shiro for Authentication and Authorization
 - Akka HTTP for handling incoming requests
 - Circe for json encoding/decoding
+- scala-i18n for internationalization
 
 ---
 
@@ -207,7 +211,50 @@ service {
 }
 ```
 
-TODO show example of loading the additional config
+
+#### Service Specific Configuration
+
+Service specific configuration can be provided in the **config** section
+
+```
+service {
+  config {
+    servicesMocked = true
+  }
+}
+```
+
+
+```scala
+case class ServiceConfig(servicesMocked: Boolean)
+```
+
+create a module
+
+```scala
+class ConfigModule extends AbstractModule with ScalaModule {
+  override def configure(): Unit = {}
+}
+
+object ConfigModule {
+
+  import ArbitraryTypeReader._
+  import Ficus._
+
+  @Provides
+  @Singleton
+  def getServiceConfig(config: Config): ServiceConfig = {
+    config.as[ServiceConfig]("service.config")
+  }
+}
+```
+In the main module
+
+```scala
+install(new ConfigModule)
+```
+
+**NOTE** you will also need to define the desired akka configuration in your applications configuration file.
 
 ---
 
@@ -630,7 +677,7 @@ Validations can be chained. Requires _import cats.implicits._
   }
 ```
 
-**HINT**, you can also perform pre and post transformation prior to and post validation. eg transforming empty string back to a None for an optional field
+**HINT**, you may in some cases want to perform pre and post transformation prior to and post validation. eg transforming empty string back to a None for an optional field
 
 To hook the validation into the route, extend the **ValidationDirective** trait
 
@@ -1050,7 +1097,58 @@ Since generally all other actions after the login will use the JWT token, we do 
 
 #### Authenticating using JWT Token
 
-TODO
+- create a class that extends the **JWTRealm** override the **doGetAuthenticationInfo**
+
+  ```scala
+  class JWTAuthRealm @Inject() (userTokenRepository: UserTokenRepository) extends JWTRealm {
+    /*
+     NOTE!
+     Token signature and expiration is already checked before this method is called.
+
+     - If the refresh token is disabled and the token is expired, this method will not be called as the request will be rejected before this point
+
+     - If the refresh token is enabled and the JWT is expired, then only when the tokens are meant to be reissued, this method will be called with that expired token as the credentials.
+
+       The reason that is passes the expired token for that request is that the new tokens are only reissued only if the old token passes all the non expiration related authentication.
+       Once the tokens are rotated, then this will be called with the non expired tokens as per normal
+    */
+    override def doGetAuthenticationInfo(authenticationToken: AuthenticationToken): AuthenticationInfo = {
+      val token = authenticationToken.asInstanceOf[JWTAuthenticationToken]
+      val principal = token.getPrincipal().asInstanceOf[Principal]
+
+      val principalType = principal.principalType
+
+      /*
+        Here we are choosing to forego any further authentication on a service token, which has already been checked for expiration by this point.
+        This is where you would add additional checks if you wanted
+      */
+      if (principalType == PrincipalType.Service) {
+        new SimpleAccount(token.getPrincipal, token.getCredentials, getName)
+      } else {
+        /*
+          Assuming that the tokens have been saves in a repository from the **TokenStorageService** covered earlier
+        */
+        val userTokens = userTokenRepository.get(principal.principal)
+        if (userTokens.isEmpty) {
+          /*
+           Since we are in Shiro realm outside our futures and eithers, we throw the Shiro AuthenticationException here as normal
+
+           This will automatically be converted to the Domain specific AuthenticationException, logged and generate the standard error response
+          */
+          throw new AuthenticationException("user has no active tokens")
+        } else {
+          // You may also want to check if the user is active or not
+          val passedInToken = token.getCredentials().asInstanceOf[String]
+          // check to see if the incoming token is in the active token list
+          userTokens.find(_.jwtToken == passedInToken) match {
+            case Some(_) => new SimpleAccount(token.getPrincipal, token.getCredentials, getName)
+            case None => throw new AuthenticationException("user token not valid")
+          }
+        }
+      }
+    }
+  }
+  ```
 
 #### Putting it all together
 
@@ -1080,7 +1178,7 @@ TODO
 
         override protected def bindRealms(): Unit = {
           val multibinder = Multibinder.newSetBinder(binder, classOf[Realm])
-          multibinder.addBinding().to(classOf[JWTAuthorizingRealm])
+          multibinder.addBinding().to(classOf[JWTAuthRealm])
           multibinder.addBinding().to(classOf[InMemoryUserNamePasswordRealm])
         }
       })
@@ -1091,19 +1189,109 @@ TODO
 - override the **bindAuthModule** in the main module that extends the **ChassisModule**
 
   ```scala
+  class MyModule extends ChassisModule {
+    override def configure(): Unit = {
+      // IMPORTANT!!! always call super.configure
+      super.configure()
+
+      install(new UserModule)
+    }
+
     // Overwrite the default auth module
     override protected def bindAuthModule(): Unit = {
-      install(new MyAuthModule)
+      install(new TestAuthModule)
     }
+  }
   ```
 
 ---
 
 ## AUTHORIZATION
 
-TODO
+Authentiction is the mechanism whereby a user's credentials are verified to be valid. Authorization on the other hand is checking whether the authenticated user has the appropriate
+permissions to perform the requested action
 
-----
+Just like authentication, the authorization logic is handled in the realm, specifically the **JWTRealm**
+
+To hook the authorization into the route the chassis provides the **authorized** and **onAuthorized** directives
+
+```scala
+def getUser: Route = path("users" / Segment) { uuid =>
+  get {
+    onAuthenticated { subject =>
+      authorized(subject, s"user:view:$uuid") {
+        onCompleteEither {
+          userService.getUser(uuid)
+        }
+      }
+    }
+  }
+}
+```
+
+**NOTE**
+since scala requests can span different execution contexts, we never lookup the Shiro subject from the **ThreadLocal**. The subject is passed around explicitly as required
+
+This authorized directive will call the **doGetAuthorizationInfo** in the JWT realm(s). If permitted, the request proceeds, if not its rejected with
+the appropriate error code
+
+**IMPORTANT** In the route, you should always check the most fine grained permissions, even if the actual permissions defined for the user are more coarse grained
+
+There are also variants such as **authorizedAny**, **onAuthorizedAny**, **authorizedAll**, **onAuthorizedAll**
+
+For the realm to determine whether this action is authorized or not, it needs to be able to look up the permissions for that logged in user.
+
+So assuming we are now storing the user permissions along with the user.
+
+```scala
+/*
+  You may want to use enums for resource and action types to make them strongly typed
+*/
+case class Permission(resource: String, action: String, instances: Set[String]) {
+  val permissionString = s"$resource:$action:${instances.mkString(",")}"
+}
+```
+
+eg the permission might actually be "stores:view:*" which means that user is allowed to view all stores
+
+```scala
+case class UserEntity(
+                       uuid: String,
+                       ... // other fields
+                       permissions: Set[Permission] = Set.empty[Permission]
+                     )
+```
+
+In the class that we defined earlier that extended the **JWTRealm** we override the **doGetAuthorizationInfo** method
+
+```scala
+class JWTAuthRealm @Inject() (userTokenRepository: UserTokenRepository, userRepository: UserRepository) extends JWTRealm {
+  private val AllPermissions = "*:*:*"
+
+  override def doGetAuthenticationInfo(authenticationToken: AuthenticationToken): AuthenticationInfo = {
+    ...
+  }
+
+  override def doGetAuthorizationInfo(principals: PrincipalCollection): AuthorizationInfo = {
+    val principal = principals.getPrimaryPrincipal.asInstanceOf[Principal]
+
+    // In this example we allow a service to perform any action, you may want to limit as needed
+    val (roleNames, permissions) = if (principal.principalType == PrincipalType.Service) {
+      (Set.empty[String], Set(AllPermissions))
+    } else {
+      userRepository.getByEmailOpt(principal.principal) match {
+        case Some(user) => (user.roles, user.permissions.map(_.permissionString))
+        case None => throw new AuthenticationException("user not found")
+      }
+    }
+    val info = new SimpleAuthorizationInfo(roleNames.asJava)
+    info.setStringPermissions(permissions.asJava)
+    info
+  }
+}
+```
+
+---
 
 ## LIFECYCLE
 
@@ -1140,6 +1328,61 @@ to complete, its probably better to run them async from the hooks and let the ho
 
 ## I18N
 
+Internationalization support is currently only hooked into the responses returned in case of errors. Logging uses the values from default language which at the moment is english.
+
+Language specific messages are in the _messages_XXX.txt_ files
+
+The file selection is driven by the configuration
+```
+languageConfig {
+  header = "Accept-Language",
+  parameter = "lang"
+}
+```
+
+Using the config, the chassis will go through the following steps until it succeeds
+
+- first try and look for the request query parameter first eg *?lang=en*.
+
+- check if the *Accept-Language* header is present in the request
+
+- default to "EN"
+
+- default to _messages.txt_ file.
+
+**NOTE** one of the improvements planned for the future is to allow default language to be configured
+
+---
+
+## MISC
+
+#### Environment
+
+If you need to do logic based on the environment, you can inject it in
+
+```scala
+class MyClass @Inject() (environment: Environment) {
+...
+}
+```
+
+#### CORS SUPPORT
+
+Allowed origins can be configured in the configuration
+```
+service {
+  baseConfig {
+    corsConfig {
+      allowedOrigins = [
+        "https://api.dev.youdomain.com"
+      ]
+    }
+  }
+}
+```
+
+#### SWAGGER
+
 TODO
 
 ---
@@ -1147,3 +1390,19 @@ TODO
 ## ACKNOWLEDGEMENTS
 
 TODO
+
+---
+
+## LICENSE
+
+**Licensed under the Apache License, Version 2.0 (the "License");**
+
+you may not use this file except in compliance with the License.
+
+You may obtain a copy of the License at
+
+[Apache-License-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+**Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.**
+
+See the License for the specific language governing permissions and limitations under the License.
