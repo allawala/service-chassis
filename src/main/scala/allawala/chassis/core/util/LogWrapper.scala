@@ -1,7 +1,7 @@
 package allawala.chassis.core.util
 
-import allawala.chassis.core.exception.DomainException
-import allawala.chassis.core.model.ErrorLog
+import allawala.chassis.core.exception.{DomainException, ValidationException}
+import allawala.chassis.core.model.{ErrorLog, ValidationEnvelope}
 import allawala.chassis.i18n.service.I18nService
 import com.typesafe.scalalogging.StrictLogging
 
@@ -17,7 +17,8 @@ trait LogWrapper extends StrictLogging {
       errorCode = e.errorCode,
       errorMessage = i18nService.getDefaultLocale(e.errorCode, Seq.empty),
       thread = e.thread,
-      payload = e.logMap.mapValues(_.toString)
+      payload = e.logMap.mapValues(_.toString),
+      details = getErrorPayload(e)
     )
 
     logger.error(errorLog.asJson.noSpaces, e)
@@ -26,4 +27,18 @@ trait LogWrapper extends StrictLogging {
   def logErrorEither(f: => Either[DomainException, _]): Unit = {
     f.left.foreach(logIt)
   }
+
+  private def getErrorPayload(e: DomainException) = {
+    e match {
+      case ve: ValidationException =>
+        ve.validationErrors.toList.groupBy(_.field).mapValues { grouped =>
+          grouped map { g =>
+            val message = i18nService.getDefaultLocale(g.code, g.parameters)
+            ValidationEnvelope(g.code, message)
+          }
+        }
+      case _ => Map.empty[String, List[ValidationEnvelope]]
+    }
+  }
+
 }

@@ -8,5 +8,6 @@ case class ErrorLog(
                      errorCode: String,
                      errorMessage: String,
                      thread: Option[String],
-                     payload: Map[String, String] = Map.empty[String, String]
+                     payload: Map[String, String] = Map.empty[String, String],
+                     details: Map[String, List[ValidationEnvelope]] = Map.empty
                    )
