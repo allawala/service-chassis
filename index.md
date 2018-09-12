@@ -5,7 +5,7 @@ title: Service Chassis
 ## INTRODUCTION
 
 A slightly opinionated services chassis that lets you bootstrap your services and applications quickly by providing support for
-authentication, authorization, internationalization etc.
+authentication, authorization, validation and I18N.
 
 It uses
 
@@ -13,6 +13,7 @@ It uses
 - Apache Shiro for Authentication and Authorization
 - Akka HTTP for handling incoming requests
 - Circe for json encoding/decoding
+- Cats for validation
 - scala-i18n for internationalization
 
 ---
@@ -283,7 +284,7 @@ To use different configurations for different environments
 
 To create a route, extend the **HasRoute** trait
 
-```
+```scala
 class MyRoute extends HasRoute {
     // provide implementation for this
     override def route: Route = ???
@@ -541,14 +542,14 @@ To handle this, the chassis has a **circeRejectHandler** which tries its best to
 
 eg.
 
-```
+```scala
 @JsonCodec
 case class Registration(email: String, password: String, firstName: String, lastName: String)
 ```
 
 **NOTE** Using the **@JsonCodec** instead of auto derivation cuts down on the compile time significantly. It requires the scala macroparadise to be enabled in build.sbt
 
-```
+```scala
 val macroParadiseVersion = "2.1.0"
 
 addCompilerPlugin("org.scalamacros" % "paradise" % macroParadiseVersion cross CrossVersion.full)
@@ -808,7 +809,9 @@ Currently the chassis recognizes the following token **typ** values
 
 As recommended, If the public/private keys are stored externally, the service token may be generated externally (using the same algorithm). This would allow the service token expiration to
 be decoupled from the expiration semantics that are driven by the **rememberMe** flag as in the case of user tokens, thus allowing for shorter lived tokens and a different rotation policy. One way to achieve this would
-be to use the combination of AWS Lambda and AWS API Gateway
+be to use the combination of AWS Lambda and AWS API Gateway.
+
+See [https://engineroom.beamwallet.com/product/2018/5/31/jwt-token-generation-using-aws-lambda](https://engineroom.beamwallet.com/product/2018/5/31/jwt-token-generation-using-aws-lambda)
 
 You can still use the chassis to generate the service tokens but you would have to use the **JWTTokenService** directly. All the provided route directives currently only cater for user tokens
 
@@ -1382,14 +1385,95 @@ service {
 ```
 
 #### SWAGGER
+In the **build.sbt**
 
-TODO
+```scala
+val swaggerVersion = "1.5.16"
+val swaggerAkkaVersion = "0.11.0"
+
+"io.swagger" % "swagger-jaxrs" % swaggerVersion,
+"com.github.swagger-akka-http" %% "swagger-akka-http" % swaggerAkkaVersion,
+```
+
+Create a route that extends the SwaggerHttpService and override the defaults as needed. By default the docs will be available at the relative path _../api-docs/swagger.json_
+
+```scala
+class SwaggerRoute extends SwaggerHttpService with HasRoute {
+  override val apiClasses = Set(
+    classOf[UserPublicRoute]
+  )
+
+  override val info = Info(version = "1.0")
+  override val securitySchemeDefinitions = Map("apiKey" -> new ApiKeyAuthDefinition("Authorization", In.HEADER))
+  override val schemes = List(Scheme.HTTPS, Scheme.HTTP)
+
+  override def route = super.routes
+
+}
+```
+
+```scala
+@Api(value = "/users", produces = "application/json")
+@Path("/v1/public/users")
+class UserPublicRoute @Inject() (
+                                  override val i18nService: I18nService,
+                                  userService: UserService
+                                ) extends HasRoute with RouteSupport {
+
+  override def route: Route = pathPrefix("v1" / "public") {
+    register ~
+    login
+  }
+
+  @ApiOperation(value = "Register user", httpMethod = "POST", response = classOf[User], authorizations = Array(new Authorization(value = "apiKey")))
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "body", value = "The user's registration details", dataTypeClass = classOf[Registration], required = true, paramType = "body")
+  ))
+  @Path("/register")
+  def register: Route = path("users" / "register") {
+    post {
+      entity(as[Registration]) { registration =>
+        // Follows the akka naming convention where completeEither expects an Either[DomainException, A] and onCompleteEither expects Future[Either[DomainException, A]] where A must provide an implicit ToEntityMarshaller
+        onCompleteEither {
+          userService.register(registration)
+        }
+      }
+    }
+  }
+
+  def login: Route = ???
+}
+```
+Create the module
+```scala
+class SwaggerModule extends AbstractModule with ScalaModule {
+
+  override def configure(): Unit = {
+    bind[SwaggerRoute].asEagerSingleton()
+  }
+}
+```
+
+Install this module in the main project module
 
 ---
 
 ## ACKNOWLEDGEMENTS
 
-TODO
+#### MDCPropagatingDispatcherConfigurator
+
+[http://yanns.github.io/blog/2014/05/04/slf4j-mapped-diagnostic-context-mdc-with-play-framework/](http://yanns.github.io/blog/2014/05/04/slf4j-mapped-diagnostic-context-mdc-with-play-framework/)
+
+[https://github.com/jroper/thread-local-context-propagation/](https://github.com/jroper/thread-local-context-propagation/)
+
+#### Refresh token hashing, constant time comparison
+
+[https://github.com/softwaremill/akka-http-session](https://github.com/softwaremill/akka-http-session)
+
+#### EvenMoreSugar.scala for unit testing
+
+[BeamWallet](https://www.beamwallet.com/au/)
+
 
 ---
 
