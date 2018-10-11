@@ -13,11 +13,15 @@ import org.apache.shiro.subject.Subject
 
 import scala.concurrent.Future
 
-trait RouteSecurity extends Directives with StrictLogging {
+object RouteSecurity {
   val AccessControlExposeHeader = "Access-Control-Expose-Headers"
   val Authorization = "Authorization"
   val RefreshToken = "Refresh-Token"
   val Bearer = "Bearer"
+}
+
+trait RouteSecurity extends Directives with StrictLogging {
+  import RouteSecurity._
 
   def authService: ShiroAuthService
 

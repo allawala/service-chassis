@@ -4,6 +4,7 @@ import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.headers.{Allow, HttpOrigin, HttpOriginRange}
 import akka.http.scaladsl.server.{Directives, MethodRejection, RejectionHandler}
+import allawala.chassis.auth.shiro.route.RouteSecurity
 import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
 
 trait CorsSupport extends Directives {
@@ -34,8 +35,8 @@ trait CorsSupport extends Directives {
     }
   }
 
-  lazy val corsSettings: CorsSettings.Default = CorsSettings.defaultSettings.copy(
-    allowedOrigins = httpOriginRange,
-    allowedMethods = scala.collection.immutable.Seq(OPTIONS, POST, PUT, GET, DELETE)
-  )
+  lazy val corsSettings: CorsSettings = CorsSettings.defaultSettings
+    .withAllowedOrigins(httpOriginRange)
+    .withAllowedMethods(scala.collection.immutable.Seq(OPTIONS, POST, PUT, GET, DELETE))
+    .withExposedHeaders(scala.collection.immutable.Seq(RouteSecurity.Authorization))
 }
