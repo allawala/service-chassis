@@ -22,7 +22,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= {
-  val akkaVersion = "2.5.17"
+  val akkaVersion = "2.5.16"
   val akkaHttpCorsVersion = "0.3.1"
   val akkaHttpVersion = "10.1.5"
   val akkaHttpCirceVersion = "1.22.0"
