@@ -35,7 +35,6 @@ libraryDependencies ++= {
   val guiceVersion = "4.1.0"
   val jwtCirceVersion = "0.18.0"
   val logbackVersion = "1.2.2"
-  val logstashVersion = "4.9"
   val metricsVersion = "3.5.6_a2.4"
   val mockitoVersion = "2.8.47"
   val scalaI18nVersion = "1.0.2"
@@ -80,7 +79,6 @@ libraryDependencies ++= {
     "org.codehaus.groovy" % "groovy-all" % groovyVersion, // To allow log config to be defined in groovy
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
-    "net.logstash.logback" % "logstash-logback-encoder" % logstashVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
     "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
     "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,

@@ -1,7 +1,5 @@
   package allawala.chassis.core.module
 
-import javax.inject.Named
-
 import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
 import akka.stream.ActorMaterializer
@@ -14,20 +12,30 @@ import allawala.chassis.http.service.AkkaHttpService
 import allawala.chassis.i18n.module.I18nModule
 import allawala.chassis.util.module.UtilModule
 import com.google.inject.{AbstractModule, Provides, Singleton}
+import com.typesafe.config.Config
+import javax.inject.Named
 import net.codingwell.scalaguice.ScalaModule
 
 import scala.concurrent.ExecutionContext
 
 abstract class ChassisModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {
-    install(new ConfigModule)
-    install(new HttpModule)
+    bindConfigModule()
+    bindHttpModule()
     bindHealthModule()
     bindUtilModule()
     bindI18nModule()
     bindAuthModule()
 
     bind[AkkaHttpService].asEagerSingleton()
+  }
+
+  protected def bindConfigModule(): Unit = {
+    install(new ConfigModule)
+  }
+
+  protected def bindHttpModule(): Unit = {
+    install(new HttpModule)
   }
 
   protected def bindHealthModule(): Unit = {
@@ -45,9 +53,7 @@ abstract class ChassisModule extends AbstractModule with ScalaModule {
   protected def bindAuthModule(): Unit = {
     install(new AuthModule)
   }
-}
 
-object ChassisModule {
   @Provides
   @Singleton
   def getAkkaMaterializer(implicit actorSystem: ActorSystem): ActorMaterializer = {
@@ -56,8 +62,8 @@ object ChassisModule {
 
   @Provides
   @Singleton
-  def getActorSystem(baseConfig: BaseConfig): ActorSystem = {
-    ActorSystem(baseConfig.name)
+  def getActorSystem(baseConfig: BaseConfig, config: Config): ActorSystem = {
+    ActorSystem(baseConfig.name, config)
   }
 
   @Provides

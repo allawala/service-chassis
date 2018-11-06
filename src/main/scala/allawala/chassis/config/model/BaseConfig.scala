@@ -7,7 +7,6 @@ case class BaseConfig(
                        httpConfig: HttpConfig,
                        languageConfig: LanguageConfig,
                        corsConfig: CorsConfig,
-                       logstash: Logstash,
                        auth: Auth,
                        awaitTermination: FiniteDuration
                      )
