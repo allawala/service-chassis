@@ -264,7 +264,8 @@ class MyModule extends ChassisModule {
     install(new MyConfigModule)
   }
 
-}```
+}
+```
 
 **NOTE** you will also need to define the desired akka configuration in your application's configuration file.
 
