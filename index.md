@@ -34,7 +34,7 @@ Add the dependency to **build.sbt**
 "allawala" %% "service-chassis" % {serviceChassisVersion}
 ```
 
-Replace the {serviceChassisVersion} with the current release version
+Replace the {serviceChassisVersion} with the current release or snapshot version
 
 Extend the **ChassisModule**
 
@@ -233,14 +233,14 @@ case class ServiceConfig(servicesMocked: Boolean)
 create a module
 
 ```scala
-class ConfigModule extends AbstractModule with ScalaModule {
-  override def configure(): Unit = {}
-}
+import ArbitraryTypeReader._
+import Ficus._
 
-object ConfigModule {
-
-  import ArbitraryTypeReader._
-  import Ficus._
+class MyConfigModule extends ConfigModule {
+  override def configure(): Unit = {
+    // IMPORTANT
+    super.configure()
+  }
 
   @Provides
   @Singleton
@@ -252,10 +252,21 @@ object ConfigModule {
 In the main module
 
 ```scala
-install(new ConfigModule)
-```
+class MyModule extends ChassisModule {
+  override def configure(): Unit = {
+    // IMPORTANT!!! always call super.configure
+    super.configure()
 
-**NOTE** you will also need to define the desired akka configuration in your applications configuration file.
+    // Do service specific configuration
+  }
+
+  override protected def bindConfigModule(): Unit = {
+    install(new MyConfigModule)
+  }
+
+}```
+
+**NOTE** you will also need to define the desired akka configuration in your application's configuration file.
 
 ---
 
@@ -512,7 +523,7 @@ Currently chassis provides the following concrete **DomainException** implementa
 **NOTE** When writing a custom directive that needs to reject a request and still be able to reuse the **DomainException** wiring for logging and standard error response
 
 ```scala
-_import allawala.chassis.core.rejection.DomainRejection._
+import allawala.chassis.core.rejection.DomainRejection._
 
 reject(ValidationException(e))
 ```
@@ -624,6 +635,8 @@ trait ValidationError {
 
 Eg.
 ```scala
+import allawala.chassis.core.validation.ValidationError
+
 final case class EmailError(field: String) extends ValidationError {
   override val code: String = "validation.error.email"
 }
@@ -632,12 +645,15 @@ final case class EmailError(field: String) extends ValidationError {
 Then create a trait with a method does the actual validation
 
 ```scala
+import allawala.ValidationResult
+import cats.implicits._
+
 trait ValidateEmail {
   // Email regex, see RFC2822
   val EmailRegex = "(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"
 
-  protected def email(name: String, value: String): ValidatedNel[ValidationError, String] = {
-    if (value.matches(EmailRegex)) Valid(value) else Invalid(NonEmptyList.of(EmailError(name)))
+  protected def email(name: String, value: String): ValidationResult[String] = {
+    if (value.matches(EmailRegex)) value.validNel else EmailError(name).invalidNel
   }
 }
 ```
@@ -650,32 +666,29 @@ validation.error.email=invalid email
 Apply the validation
 ```scala
 trait UserValidator extends ValidateEmail {
-  def validateRegistration(registration: Registration): Validated[NonEmptyList[ValidationError], Registration]
+  def validateRegistration(registration: Registration): ValidationResult[Registration]
 }
 ```
 
 
 ```scala
+import allawala.ValidationResult
+import allawala.chassis.core.validation.ValidationError
+import cats.implicits._
+
 class UserValidatorImpl extends UserValidator {
-  override def validateRegistration(registration: Registration): Validated[NonEmptyList[ValidationError], Registration] = {
-    email("email", registration.email) map { _ =>
-      registration
-    }
-  }
-}
-```
 
-Validations can be chained. Requires _import cats.implicits._
-
-```scala
-  override def validateRegistration(registration: Registration): Validated[NonEmptyList[ValidationError], Registration] = {
-    email("email", registration.email) |@|
-      notBlank("firstName", registration.firstName) |@|
-      notBlank("lastName", registration.lastName) |@|
-      minLength("password", registration.password, 5) map {
+  override def validateRegistration(registration: Registration): ValidationResult[Registration] = {
+    (
+      email("email", registration.email),
+      notBlank("firstName", registration.firstName),
+      notBlank("lastName", registration.lastName),
+      minLength("password", registration.password, 8)
+    ) mapN {
       case _ => registration
     }
   }
+}
 ```
 
 **HINT**, you may in some cases want to perform pre and post transformation prior to and post validation. eg transforming empty string back to a None for an optional field
@@ -716,16 +729,16 @@ final case class EqualError[T](override val field: String, expected: T) extends 
 
 ```scala
 trait ValidateEqual {
-  protected def equal[T](name: String, value: T, expected: T): ValidatedNel[ValidationError, T] =
-    if (value != expected) Invalid(NonEmptyList.of(EqualError(name, expected))) else Valid(value)
+  protected def equal[T](name: String, value: T, expected: T): ValidationResult[T] =
+    if (value != expected) EqualError(name, expected).invalidNel else value.validNel
 
-  protected def equal[T](name: String, value: Option[T], expected: T): ValidatedNel[ValidationError, Option[T]] = value match {
+  protected def equal[T](name: String, value: Option[T], expected: T): ValidationResult[Option[T]] = value match {
     case Some(v) => equal(name, v, expected).map(_ => value)
-    case None => Invalid(NonEmptyList.of(EqualError(name, expected)))
+    case None => EqualError(name, expected).invalidNel
   }
 
-  protected def equalIgnoreCase(name: String, value: String, expected: String): ValidatedNel[ValidationError, String] =
-    if (value.toLowerCase != expected.toLowerCase) Invalid(NonEmptyList.of(EqualError(name, expected))) else Valid(value)
+  protected def equalIgnoreCase(name: String, value: String, expected: String): ValidationResult[String] =
+    if (value.toLowerCase != expected.toLowerCase) EqualError(name, expected).invalidNel else value.validNel
 }
 ```
 
@@ -740,12 +753,12 @@ Notice, that these follow the pattern defining the validation for optional field
 
 ```scala
 trait ValidateRequired {
-  protected def required[T](name: String, value: Option[T]): ValidatedNel[ValidationError, T] = value match {
-    case Some(v) => Valid(v)
-    case None => Invalid(NonEmptyList.of(RequiredField(name)))
+  protected def required[T](name: String, value: Option[T]): ValidationResult[T] = value match {
+    case Some(v) => v.validNel
+    case None => RequiredField(name).invalidNel
   }
 
-  protected def requiredString(name: String, value: Option[String]): ValidatedNel[ValidationError, String] =
+  protected def requiredString(name: String, value: Option[String]): ValidationResult[String] =
     required[String](name, value)
 }
 ```
@@ -1383,6 +1396,33 @@ service {
   }
 }
 ```
+
+#### Enhancing actor system configuration programmatically
+
+if the service is deployed inside a auto scaling cluster of ec2 instances, and there is need for a cluster singleton akka actor, then the additional configuration can be specified by overriding the __loadConfig__ method
+
+```scala
+class MyConfigModule extends ConfigModule {
+  override def configure(): Unit = {
+    // IMPORTANT
+    super.configure()
+  }
+
+  override protected def loadConfig(environment: Environment): Config = {
+    // Get the port, host and seeds for the ec2 instances
+    val host = ???
+    val port = ???
+    val seeds = ???
+    ConfigFactory.empty()
+      .withValue("akka.remote.netty.tcp.bind-hostname", ConfigValueFactory.fromAnyRef("0.0.0.0"))
+      .withValue("akka.remote.netty.tcp.bind-port", ConfigValueFactory.fromAnyRef(port))
+      .withValue("akka.remote.netty.tcp.hostname", ConfigValueFactory.fromAnyRef(host))
+      .withValue("akka.remote.netty.tcp.port", ConfigValueFactory.fromAnyRef(port))
+      .withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromIterable(seeds.asJava))
+      .withFallback(defaultConfig)
+  }
+
+}```
 
 #### SWAGGER
 In the **build.sbt**
