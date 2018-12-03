@@ -29,3 +29,8 @@ logs
 
 #vagrant
 .vagrant
+
+#Jekyll
+/_site/
+/Gemfile
+/Gemfile.lock
