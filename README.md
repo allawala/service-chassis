@@ -1,3 +1,6 @@
+## Current Release Version
+1.0.4
+
 ## Commit Messages
 
 see [git-commit](https://chris.beams.io/posts/git-commit/) for an acceptable commit message structure
@@ -28,7 +31,7 @@ see [git-commit](https://chris.beams.io/posts/git-commit/) for an acceptable com
 
 ** see details below
 
-## Extending the chassis
+## Chassis Documentation
 [Documentation](https://allawala.github.io/service-chassis/)
 
 ## Details
@@ -91,24 +94,3 @@ The following sbt plugins are used
 Uses gh-pages branch
 
 `jekyll serve --watch`
-
-## Vagrant (EXPERIMENTAL)
-Vagrantfile is defined in the project's root folder.
-
-To check the status of the vagrant boxes defined in the file `vagrant status`
-
-To bring up an individual box eg. the services box `vagrant up services`
-
-## LOGSTASH (EXPERIMENTAL)
-If enabled in the configuration, Logstash with ES/Kibana will be used for logging.
-
-For local testing, elastic search and kibana will be installed on the `services` box
-
-With the services box running, kibana can be accessed at `http://{static-ip}:5601/`
-
-To test locally, enable logstash in the configuration, and start up a local docker container running logstash which will 
-forward the logs to the elastic search server running on the `services` vagrant box
-
-`docker run -p 51515:51515 logstash -e 'input { tcp { port => 51515 codec => json_lines } } output { elasticsearch { hosts => ["192.168.1.10"]} }'`
-
--e flag allows us to specify the configuration as part of the command
