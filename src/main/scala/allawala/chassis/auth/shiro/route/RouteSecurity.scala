@@ -7,16 +7,21 @@ import allawala.chassis.auth.exception.{AuthenticationException, AuthorizationEx
 import allawala.chassis.auth.shiro.model.AuthenticatedSubject
 import allawala.chassis.auth.shiro.service.ShiroAuthService
 import allawala.chassis.core.rejection.DomainRejection._
+import allawala.chassis.util.UserUtil
 import com.typesafe.scalalogging.StrictLogging
 import org.apache.shiro.subject.Subject
 
 import scala.concurrent.Future
 
-trait RouteSecurity extends Directives with StrictLogging {
+object RouteSecurity {
   val AccessControlExposeHeader = "Access-Control-Expose-Headers"
   val Authorization = "Authorization"
   val RefreshToken = "Refresh-Token"
   val Bearer = "Bearer"
+}
+
+trait RouteSecurity extends Directives with StrictLogging {
+  import RouteSecurity._
 
   def authService: ShiroAuthService
 
@@ -139,6 +144,17 @@ trait RouteSecurity extends Directives with StrictLogging {
       } else {
         pass
       }
+    }
+  }
+
+  /*
+    Very simple authorization that checks if the incoming token is a service token or not, If so allows the request without checking any other permissions
+   */
+  def authorizedService(subject: Subject): Directive0 = {
+    if (!UserUtil.isService(subject)) {
+      reject(AuthorizationException(logMap = Map("reason" -> "service principal expected")))
+    } else {
+      pass
     }
   }
 

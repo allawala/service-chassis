@@ -22,20 +22,19 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= {
-  val akkaVersion = "2.4.17"
-  val akkaHttpCorsVersion = "0.2.1"
-  val akkaHttpVersion = "10.0.9"
-  val akkaHttpCirceVersion = "1.13.0"
+  val akkaVersion = "2.5.16"
+  val akkaHttpCorsVersion = "0.3.1"
+  val akkaHttpVersion = "10.1.5"
+  val akkaHttpCirceVersion = "1.22.0"
   val beanUtilsVersion = "1.9.3"
-  val circeVersion = "0.7.0"
-  val enumeratumVersion = "1.5.10"
-  val enumeratumCirceVersion = "1.5.10"
+  val circeVersion = "0.9.3"
+  val enumeratumVersion = "1.5.13"
+  val enumeratumCirceVersion = "1.5.13"
   val ficusVersion = "1.4.0"
   val groovyVersion = "2.4.10"
   val guiceVersion = "4.1.0"
-  val jwtCirceVersion = "0.12.1"
+  val jwtCirceVersion = "0.18.0"
   val logbackVersion = "1.2.2"
-  val logstashVersion = "4.9"
   val metricsVersion = "3.5.6_a2.4"
   val mockitoVersion = "2.8.47"
   val scalaI18nVersion = "1.0.2"
@@ -80,7 +79,6 @@ libraryDependencies ++= {
     "org.codehaus.groovy" % "groovy-all" % groovyVersion, // To allow log config to be defined in groovy
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
-    "net.logstash.logback" % "logstash-logback-encoder" % logstashVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
     "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
     "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,

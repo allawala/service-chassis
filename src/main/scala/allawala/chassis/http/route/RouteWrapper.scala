@@ -9,14 +9,13 @@ import allawala.chassis.core.exception.{DomainException, UnexpectedException, Va
 import allawala.chassis.core.rejection.DomainRejection
 import allawala.chassis.core.validation.RequiredField
 import cats.data.NonEmptyList
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import org.apache.shiro.authc.{AuthenticationException => ShiroAuthenticationException}
 import org.slf4j.MDC
 
 trait RouteWrapper extends RouteSupport {
 
   def routesExceptionHandler: ExceptionHandler = {
-    import io.circe.generic.auto._
-
     ExceptionHandler {
       // This can happen on a Future.failed { with some domain exception}
       case e: DomainException => fail(e)
@@ -39,9 +38,9 @@ trait RouteWrapper extends RouteSupport {
     we can turn this into a validation exception so that it can be handled better on the client side.
   */
   def circeRejectHandler: RejectionHandler = RejectionHandler.newBuilder().handle {
-    case MalformedRequestContentRejection(msg, ex) if ex.isInstanceOf[io.circe.Errors] ⇒
+    case MalformedRequestContentRejection(msg, ex) if ex.isInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures] ⇒
       val regex = "DownField\\((.*?)\\)".r
-      val errorMessages = ex.asInstanceOf[io.circe.Errors].errors.map(_.getMessage).toList
+      val errorMessages = ex.asInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures].failures.map(_.getMessage).toList
       val matches = errorMessages.map(e => regex.findAllMatchIn(e).map(_.group(1)).toList)
       val requiredFields = for (m <- matches) yield {
         val field = m.reverse.mkString(".")

@@ -25,6 +25,7 @@ trait RouteLogging extends StrictLogging {
     )
 
     logger.error(log.asJson.noSpaces, e)
+    Option(e.cause).foreach(logger.error("caused by", _))
   }
 
   def toErrorEnvelope(request: HttpRequest, correlationId: String, e: DomainException): ErrorEnvelope = ErrorEnvelope(

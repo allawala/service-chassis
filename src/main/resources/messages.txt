@@ -1,5 +1,6 @@
 authentication.error=authentication failure
 authorization.error=unauthorized
+client.error=invalid request
 initialization.error=initialization failure
 invalid.request=invalid request
 server.error=server error

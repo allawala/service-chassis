@@ -3,45 +3,36 @@ package allawala.chassis.http.service
 import javax.inject.{Inject, Named, Provider}
 
 import akka.actor.ActorSystem
-import akka.event.LoggingAdapter
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import allawala.chassis.config.model.{BaseConfig, Environment}
 import allawala.chassis.core.exception.InitializationException
+import allawala.chassis.core.util.LogWrapper
 import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
+import allawala.chassis.i18n.service.I18nService
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class AkkaHttpService @Inject()(
                                  val baseConfig: BaseConfig,
                                  val routes: Routes,
                                  val environment: Environment,
-                                 val logger: LoggingAdapter,
-                                 val lifecycleAwareRegistryProvider: Provider[LifecycleAwareRegistry]
+                                 val lifecycleAwareRegistryProvider: Provider[LifecycleAwareRegistry],
+                                 override val i18nService: I18nService
                                )(
                                  implicit val actorSystem: ActorSystem,
                                  implicit val actorMaterializer: ActorMaterializer,
                                  @Named("default-dispatcher") implicit val ec: ExecutionContext
-                               ) {
+                               ) extends LogWrapper {
 
   def run(): Unit = {
-    val started = lifecycleAwareRegistryProvider.get().get().map(_.preStart())
-    Future.sequence(started).onComplete {
-      case Success(results) =>
-        // Filter out all the valid results so that only the failed ones are in the sequence
-        val failed: Seq[Either[InitializationException, Unit]] = results.filter(_.isLeft)
-        if (failed.isEmpty) {
-          bind()
-        } else {
-          failed.map(_.left).map(_.get).foreach(ex => logger.error(ex, ex.getMessage))
-          logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] PRE START FAILURE ****")
-          actorSystem.terminate()
-        }
-      case Failure(e) =>
-        logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] PRE START FAILURE **** ")
-        actorSystem.terminate()
+    executeLifeCycleEventsAndThen("PRE START", Future.sequence(lifecycleAwareRegistryProvider.get().get().map(_.preStart()))) {
+      bind()
+    } {
+      // Try and clean up
+      preStop()
     }
   }
 
@@ -51,15 +42,40 @@ class AkkaHttpService @Inject()(
       case Success(b) => {
         logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****.")
         printLogbackConfig()
+
+        executeLifeCycleEventsAndThen("POST START", Future.sequence(lifecycleAwareRegistryProvider.get().get().map(_.postStart()))) {
+          () // If successful, do nothing
+        } {
+          // Try and clean up
+          preStop(Some(b))
+        }
+
         sys.addShutdownHook {
           logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] SHUTTING DOWN ****.")
-          b.unbind().onComplete(_ => actorSystem.terminate())
+          preStop(Some(b))
         }
       }
       case Failure(e) =>
-        logger.error(e, s"**** [${environment.entryName}] [${actorSystem.name}] FAILED TO START **** ")
+        logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] FAILED TO START **** ", e)
         actorSystem.terminate()
     }
+  }
+
+  private def preStop(binding: Option[Http.ServerBinding] = None) = {
+    def unbindAndTerminate(binding: Option[Http.ServerBinding]) = {
+      binding match {
+        case Some(b) => b.unbind().onComplete(_ => actorSystem.terminate())
+        case None => actorSystem.terminate()
+      }
+    }
+
+    executeLifeCycleEventsAndThen("PRE STOP", Future.sequence(lifecycleAwareRegistryProvider.get().get().map(_.preStop()))) {
+      unbindAndTerminate(binding)
+    } {
+      unbindAndTerminate(binding)
+    }
+
+    Await.result(actorSystem.whenTerminated, baseConfig.awaitTermination)
   }
 
   private def printLogbackConfig() = {
@@ -69,5 +85,25 @@ class AkkaHttpService @Inject()(
 
     val context: LoggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
     StatusPrinter.print(context)
+  }
+
+  private def executeLifeCycleEventsAndThen(name: String, events: Future[Seq[Either[InitializationException, Unit]]])
+                                           (onSuccess: => Unit)
+                                           (onFailure: => Unit) = {
+    events.onComplete {
+      case Success(results) =>
+        val failed: Seq[Either[InitializationException, Unit]] = results.filter(_.isLeft)
+        if (failed.isEmpty) {
+          logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] $name SUCCESS ****")
+          onSuccess
+        } else {
+          failed.map(_.left).map(_.get).foreach(ex => logIt(ex))
+          logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] $name FAILURE ****")
+          onFailure
+        }
+      case Failure(e) =>
+        logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] $name FAILURE **** ", e)
+        onFailure
+    }
   }
 }

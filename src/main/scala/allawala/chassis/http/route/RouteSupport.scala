@@ -6,8 +6,11 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.{Directives, Route}
 import allawala.chassis.core.exception.DomainException
 import allawala.{ResponseE, ResponseFE}
+import cats.data.EitherT
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import org.slf4j.MDC
+
+import scala.concurrent.Future
 
 trait RouteSupport
   extends Directives
@@ -22,6 +25,15 @@ trait RouteSupport
   // We do not import the circe auto gen for the success case as it is possible that the caller might provide a custom serializer
   def onCompleteEither[T: ToEntityMarshaller](statusCode: StatusCode)(resource: ResponseFE[T]): Route =
     onSuccess(resource) {
+      case Left(e) => fail(e)
+      case Right(t) => complete(statusCode -> t)
+    }
+
+  def onCompleteEitherT[T: ToEntityMarshaller](resource: EitherT[Future, DomainException, T]): Route =
+    onCompleteEitherT(OK)(resource)
+
+  def onCompleteEitherT[T: ToEntityMarshaller](statusCode: StatusCode)(resource: EitherT[Future, DomainException, T]): Route =
+    onSuccess(resource.value) {
       case Left(e) => fail(e)
       case Right(t) => complete(statusCode -> t)
     }

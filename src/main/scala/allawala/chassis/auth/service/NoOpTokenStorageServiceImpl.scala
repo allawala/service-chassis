@@ -9,9 +9,7 @@ import allawala.chassis.util.DateTimeProvider
 import scala.concurrent.Future
 
 class NoOpTokenStorageServiceImpl @Inject()(val dateTimeProvider: DateTimeProvider) extends TokenStorageService {
-  override def storeTokens(
-                             principalType: PrincipalType, principal: String, jwtToken: String, refreshToken: Option[RefreshToken]
-                           ): ResponseFE[Unit] = {
+  override def storeTokens(principalType: PrincipalType, principal: String, jwtToken: String, refreshToken: Option[RefreshToken]): ResponseFE[Unit] = {
     Future.successful(Right(()))
   }
 
@@ -20,17 +18,12 @@ class NoOpTokenStorageServiceImpl @Inject()(val dateTimeProvider: DateTimeProvid
   }
 
   override def rotateTokens(
-                             principalType: PrincipalType, principal: String,
-                             oldJwtToken: String, jwtToken: String,
-                             oldRefreshToken: RefreshToken, refreshToken: RefreshToken
+                             principalType: PrincipalType, principal: String, oldJwtToken: String, jwtToken: String, oldRefreshToken: RefreshToken, refreshToken: RefreshToken
                            ): ResponseFE[Unit] = {
     Future.successful(Right(()))
   }
 
-  override def removeTokens(
-                             principalType: PrincipalType, principal: String,
-                             jwtToken: String, refreshTokenSelector: Option[String]
-                           ): ResponseFE[Unit] = {
+  override def removeTokens(principalType: PrincipalType, principal: String, jwtToken: String, refreshTokenSelector: Option[String]): ResponseFE[Unit] = {
     Future.successful(Right(()))
   }
 

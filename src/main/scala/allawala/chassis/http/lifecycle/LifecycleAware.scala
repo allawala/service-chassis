@@ -10,4 +10,8 @@ trait LifecycleAware {
     This should avoid performing any long running operations
    */
   def preStart(): Future[Either[InitializationException, Unit]]
+
+  def postStart(): Future[Either[InitializationException, Unit]]
+
+  def preStop(): Future[Either[InitializationException, Unit]]
 }

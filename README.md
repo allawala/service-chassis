@@ -10,7 +10,7 @@ see [git-commit](https://chris.beams.io/posts/git-commit/) for an acceptable com
 - compile and test
 `sbt clean compile test`
 - run
-`sbt run`
+`sbt run` and then goto http://localhost:8080/health
 - create docker image **
 `sbt docker`
 - create a docker image and push to remote registry **
@@ -26,15 +26,10 @@ see [git-commit](https://chris.beams.io/posts/git-commit/) for an acceptable com
 - run local docker image
 `docker run -p 8080:8080 {ID}` where {ID} is the image id. To check that the service is up and running, goto http://localhost:8080/health
 
-**IMPORTANT**
-The release notes should be maintained in the ./notes folder with the naming convention of `${RELEASE_VERSION}.markdown`
-Even though currently these are not set as the release notes on github for the released tag, it is intended to introduce a new release step to do just that. 
-Hence, make sure that these exists before every new release via sbt release.
-
 ** see details below
 
 ## Extending the chassis
-Microservices wishing to extend the chassis MUST define the akka {} configuration again in the conf files
+[Documentation](https://allawala.github.io/service-chassis/)
 
 ## Details
 
@@ -90,32 +85,21 @@ The following sbt plugins are used
 
 - s3 Resolver [fm-sbt-s3-resolver](https://github.com/frugalmechanic/fm-sbt-s3-resolver)
     s3 will be used to host the snapshot and release jars
-    
-## Vagrant
+
+
+## Documentation
+Uses gh-pages branch
+
+`jekyll serve --watch`
+
+## Vagrant (EXPERIMENTAL)
 Vagrantfile is defined in the project's root folder.
 
 To check the status of the vagrant boxes defined in the file `vagrant status`
 
 To bring up an individual box eg. the services box `vagrant up services`
 
-## Consul
-We are using Consul for service discovery using the docker image https://hub.docker.com/r/progrium/consul/
-
-To pull the latest image `docker pull progrium/consul`
-
-To check the installation manually `docker run -d -p 8500:8500 progrium/consul -server -bootstrap -ui-dir ui` and then go to `localhost:8500`
-
-For local testing consul server will be deployed within the services vagrant box. This will be started with the `vagrant up services` command
-
-The ui can then be acceessed at the {static-ip}:8500/ui where the {static-ip} is the ip defined in the vagrant file for the services box
-
-Joining the cluster can be tested manually by running the following command from the terminal, which will connect the consul client to the server
-
-`docker run -d -p 8300:8300 -p 8301:8301 -p 8301:8301/udp -p 8302:8302 -p 8302:8302/udp -p 8400:8400 -p 8500:8500 progrium/consul -advertise 127.0.0.1 -join {static-ip}` 
-where the {static-ip} is the ip defined in the vagrant file for the services box
-
-
-## LOGSTASH
+## LOGSTASH (EXPERIMENTAL)
 If enabled in the configuration, Logstash with ES/Kibana will be used for logging.
 
 For local testing, elastic search and kibana will be installed on the `services` box
@@ -128,7 +112,3 @@ forward the logs to the elastic search server running on the `services` vagrant 
 `docker run -p 51515:51515 logstash -e 'input { tcp { port => 51515 codec => json_lines } } output { elasticsearch { hosts => ["192.168.1.10"]} }'`
 
 -e flag allows us to specify the configuration as part of the command
-
-## SHIRO
-Apache Shiro is used as the implement authentication and authorization.
-TODO: cover RSA signing, JWT auth, username password auth, remember me tokens

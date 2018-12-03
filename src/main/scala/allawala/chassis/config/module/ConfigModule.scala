@@ -6,17 +6,11 @@ import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus
 import net.ceedubs.ficus.readers.ArbitraryTypeReader
 import net.codingwell.scalaguice.ScalaModule
+import ArbitraryTypeReader._
+import Environment._
+import Ficus._
 
 class ConfigModule extends AbstractModule with ScalaModule {
-  override def configure(): Unit = {}
-}
-
-object ConfigModule {
-
-  import ArbitraryTypeReader._
-  import Environment._
-  import Ficus._
-
   /*
    This is created here instead of within the getConfig provider is because we do not have access to the provider in the logback
    groovy configuration and calling getconfig directly would have loaded the configuration again.
@@ -24,6 +18,7 @@ object ConfigModule {
   private val environment = sys.env.get("ENV").flatMap(Environment.withNameInsensitiveOption).getOrElse(Local)
   private val config = loadEnvConfig
 
+  override def configure(): Unit = {}
 
   @Provides
   @Singleton
@@ -69,6 +64,10 @@ object ConfigModule {
         sys.props("config.resource") = s"application.${environment.entryName}.conf"
     }
     ConfigFactory.invalidateCaches()
+    loadConfig(environment)
+  }
+
+  protected def loadConfig(environment: Environment): Config = {
     ConfigFactory.load()
   }
 }
