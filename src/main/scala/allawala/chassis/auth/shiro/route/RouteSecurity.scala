@@ -1,7 +1,9 @@
 package allawala.chassis.auth.shiro.route
 
+import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.{Directive0, Directive1, Directives}
+import akka.stream.ActorMaterializer
 import allawala.ResponseFE
 import allawala.chassis.auth.exception.{AuthenticationException, AuthorizationException}
 import allawala.chassis.auth.shiro.model.AuthenticatedSubject
@@ -24,41 +26,31 @@ trait RouteSecurity extends Directives with StrictLogging {
   import RouteSecurity._
 
   def authService: ShiroAuthService
-
-  def setAuthorizationHeader(token: String): Directive0 = {
-    val accessControlAccessHeader = RawHeader(AccessControlExposeHeader, Authorization)
-    val authorizationHeader = RawHeader(Authorization, s"$Bearer $token")
-    respondWithHeaders(accessControlAccessHeader, authorizationHeader)
-  }
-
-  def setRefreshHeader(refreshToken: Option[String]): Directive0 = {
-    refreshToken match {
-      case Some(rt) =>
-        val accessControlAccessHeader = RawHeader(AccessControlExposeHeader, RefreshToken)
-        val refreshHeader = RawHeader(RefreshToken, rt)
-        respondWithHeaders(accessControlAccessHeader, refreshHeader)
-      case None => pass
-    }
-  }
+  implicit def am: ActorMaterializer
 
   val onAuthenticated: Directive1[Subject] = {
-    (headerValueByName(Authorization) & optionalHeaderValueByName(RefreshToken)).tflatMap {
-      case (authToken, refreshToken) =>
-        if (!authToken.startsWith("Bearer")) {
-          reject(AuthenticationException(logMap = Map("reason" -> "Missing Bearer")))
-        } else {
-          val jwtToken = authToken.split(' ').last
-          onSuccess(authService.authenticateToken(jwtToken, refreshToken)) flatMap {
-            case Left(e) => reject(e)
-            case Right(authenticatedSubject) =>
-              // new tokens issued
-              if (authenticatedSubject.jwtToken != jwtToken) {
-                authenticated(authenticatedSubject)
-              } else {
-                provide(authenticatedSubject.subject)
-              }
+    extractRequest tflatMap { request =>
+      (headerValueByName(Authorization) & optionalHeaderValueByName(RefreshToken)).tflatMap {
+        case (authToken, refreshToken) =>
+          if (!authToken.startsWith("Bearer")) {
+            discardRequest(request._1)
+            reject(AuthenticationException(logMap = Map("reason" -> "Missing Bearer")))
+          } else {
+            val jwtToken = authToken.split(' ').last
+            onSuccess(authService.authenticateToken(jwtToken, refreshToken)) flatMap {
+              case Left(e) =>
+                discardRequest(request._1)
+                reject(e)
+              case Right(authenticatedSubject) =>
+                // new tokens issued
+                if (authenticatedSubject.jwtToken != jwtToken) {
+                  authenticated(authenticatedSubject)
+                } else {
+                  provide(authenticatedSubject.subject)
+                }
+            }
           }
-        }
+      }
     }
   }
 
@@ -179,6 +171,29 @@ trait RouteSecurity extends Directives with StrictLogging {
     setAuthorizationHeader(authenticatedSubject.jwtToken) &
       setRefreshHeader(authenticatedSubject.refreshToken) &
       provide(authenticatedSubject.subject)
+  }
+
+  private def setAuthorizationHeader(token: String): Directive0 = {
+    val accessControlAccessHeader = RawHeader(AccessControlExposeHeader, Authorization)
+    val authorizationHeader = RawHeader(Authorization, s"$Bearer $token")
+    respondWithHeaders(accessControlAccessHeader, authorizationHeader)
+  }
+
+  private def setRefreshHeader(refreshToken: Option[String]): Directive0 = {
+    refreshToken match {
+      case Some(rt) =>
+        val accessControlAccessHeader = RawHeader(AccessControlExposeHeader, RefreshToken)
+        val refreshHeader = RawHeader(RefreshToken, rt)
+        respondWithHeaders(accessControlAccessHeader, refreshHeader)
+      case None => pass
+    }
+  }
+
+  // Clean up the stream if needed as calling authenticate first and failing will short circuit entity from every being read
+  private def discardRequest(request: HttpRequest) = {
+    if (!request.entity.isKnownEmpty()) {
+      request.discardEntityBytes()
+    }
   }
 
   val jwtToken: Directive1[String] = headerValueByName(Authorization).map(header => header.split(' ').last)
