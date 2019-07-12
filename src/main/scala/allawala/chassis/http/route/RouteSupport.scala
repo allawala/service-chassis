@@ -58,4 +58,5 @@ trait RouteSupport
       complete(statusCode -> toErrorEnvelope(requestContext.request, MDC.get(XCorrelationId), ex))
     }
   }
+
 }
