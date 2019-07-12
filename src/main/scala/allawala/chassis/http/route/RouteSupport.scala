@@ -18,7 +18,7 @@ trait RouteSupport
 
   val XCorrelationId = "X-CORRELATION-ID"
 
-  def onCompleteEitherHttpResponse(response: ResponseFE[HttpResponse]): Route = {
+  def onCompleteEitherHttpWithResponse(response: ResponseFE[HttpResponse]): Route = {
     onSuccess(response) {
       case Left(e) => fail(e)
       case Right(t) => complete(t)
