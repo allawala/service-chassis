@@ -59,5 +59,4 @@ trait RouteSupport
     }
   }
 
-
 }
