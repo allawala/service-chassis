@@ -23,18 +23,22 @@ scalacOptions ++= Seq(
 
 libraryDependencies ++= {
   val akkaVersion = "2.5.16"
-  val akkaHttpCorsVersion = "0.3.1"
-  val akkaHttpVersion = "10.1.5"
-  val akkaHttpCirceVersion = "1.22.0"
-  val beanUtilsVersion = "1.9.3"
-  val circeVersion = "0.9.3"
+  val akkaHttpCorsVersion = "0.4.1"
+  val akkaHttpVersion = "10.1.10"
+  val akkaHttpCirceVersion = "1.29.1"
+  val beanUtilsVersion = "1.9.4"
+  val bouncyCastleVersion = "1.64"
+  val circeVersion = "0.12.3"
+  val circeOpticsVersion = "0.12.0"
+  val circeGenericsVersion = "0.12.2"
   val enumeratumVersion = "1.5.13"
-  val enumeratumCirceVersion = "1.5.13"
-  val ficusVersion = "1.4.0"
+  val enumeratumCirceVersion = "1.5.22"
+  val ficusVersion = "1.4.7"
   val groovyVersion = "2.4.10"
-  val guiceVersion = "4.1.0"
-  val jwtCirceVersion = "0.18.0"
-  val logbackVersion = "1.2.2"
+  val guiceVersion = "4.2.2"
+  val scalaGuiceVersion = "4.2.6"
+  val jwtCirceVersion = "4.1.0"
+  val logbackVersion = "1.2.3"
   val metricsVersion = "3.5.6_a2.4"
   val mockitoVersion = "2.8.47"
   val scalaI18nVersion = "1.0.2"
@@ -52,12 +56,15 @@ libraryDependencies ++= {
     // BeanUtils
     "commons-beanutils" % "commons-beanutils" % beanUtilsVersion,
 
+    // BouncyCastle
+    "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion,
+
     // Config
     "com.iheart" %% "ficus" % ficusVersion,
 
     // DI
     "com.google.inject" % "guice" % guiceVersion,
-    "net.codingwell" %% "scala-guice" % guiceVersion,
+    "net.codingwell" %% "scala-guice" % scalaGuiceVersion,
 
     // Enums
     "com.beachape" %% "enumeratum" % enumeratumVersion,
@@ -67,8 +74,8 @@ libraryDependencies ++= {
     "io.circe" %% "circe-core" % circeVersion,
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
-    "io.circe" %% "circe-optics" % circeVersion,
-    "io.circe" %% "circe-generic-extras" % circeVersion,
+    "io.circe" %% "circe-optics" % circeOpticsVersion,
+    "io.circe" %% "circe-generic-extras" % circeGenericsVersion,
 
     "de.heikoseeberger" %% "akka-http-circe" % akkaHttpCirceVersion excludeAll ExclusionRule(organization = "io.circe"),
 
