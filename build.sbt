@@ -57,7 +57,8 @@ libraryDependencies ++= {
     "commons-beanutils" % "commons-beanutils" % beanUtilsVersion,
 
     // BouncyCastle
-    "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion,
+    "org.bouncycastle" % "bcprov-jdk15to18" % bouncyCastleVersion,
+    "org.bouncycastle" % "bcpkix-jdk15to18" % bouncyCastleVersion,
 
     // Config
     "com.iheart" %% "ficus" % ficusVersion,
