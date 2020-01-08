@@ -2,7 +2,7 @@ package allawala.chassis.util
 
 import java.io.{File, FileOutputStream, OutputStreamWriter}
 import java.nio.file.Paths
-import java.security.{Key, KeyPair, KeyPairGenerator, Security}
+import java.security._
 
 import com.typesafe.scalalogging.StrictLogging
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -12,6 +12,9 @@ import org.bouncycastle.util.io.pem.{PemObject, PemWriter}
   Utility class to generate a public/private key pair files in the user home directory.
    To run, call RSAKeyGenerator.generate()
  */
+
+case class RSAKey(privateKey: PrivateKey, publicKey: PublicKey)
+
 object RSAKeyGenerator extends StrictLogging {
   private val KeySize = 2048
   private val homeDir = System.getProperty("user.home")
@@ -45,14 +48,20 @@ object RSAKeyGenerator extends StrictLogging {
     logger.debug(s"Writing $description to $path/$filename")
   }
 
-  def generate(): Unit = {
+  def generate(): RSAKey = {
     Security.addProvider(new BouncyCastleProvider)
 
     val keyPair = generateKeyPair()
     val privateKey = keyPair.getPrivate
     val publicKey = keyPair.getPublic
 
-    writePem(privateKey, "RSA PRIVATE KEY","id_rsa")
-    writePem(publicKey, "RSA PUBLIC KEY", "id_rsa.pub")
+    RSAKey(privateKey, publicKey)
+  }
+
+  def generateToFile(): Unit = {
+    val rsaKey = generate()
+
+    writePem(rsaKey.privateKey, "RSA PRIVATE KEY","id_rsa")
+    writePem(rsaKey.publicKey, "RSA PUBLIC KEY", "id_rsa.pub")
   }
 }
