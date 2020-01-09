@@ -22,10 +22,10 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= {
-  val akkaVersion = "2.5.16"
-  val akkaHttpCorsVersion = "0.4.1"
-  val akkaHttpVersion = "10.1.10"
-  val akkaHttpCirceVersion = "1.29.1"
+  val akkaVersion = "2.6.1"
+  val akkaHttpCorsVersion = "0.4.2"
+  val akkaHttpVersion = "10.1.11"
+  val akkaHttpCirceVersion = "1.30.0"
   val beanUtilsVersion = "1.9.4"
   val bouncyCastleVersion = "1.64"
   val circeVersion = "0.12.3"

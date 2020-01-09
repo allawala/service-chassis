@@ -2,7 +2,7 @@
 
 import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import allawala.chassis.auth.module.AuthModule
 import allawala.chassis.config.model.BaseConfig
 import allawala.chassis.config.module.ConfigModule
@@ -56,8 +56,8 @@ abstract class ChassisModule extends AbstractModule with ScalaModule {
 
   @Provides
   @Singleton
-  def getAkkaMaterializer(implicit actorSystem: ActorSystem): ActorMaterializer = {
-    ActorMaterializer()
+  def getAkkaMaterializer(implicit actorSystem: ActorSystem): Materializer = {
+    Materializer.matFromSystem
   }
 
   @Provides
