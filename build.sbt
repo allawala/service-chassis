@@ -1,8 +1,14 @@
+import sbt.Keys._
+import sbt._
+import sbtbuildinfo.BuildInfoKeys.{buildInfoKeys, buildInfoOptions, buildInfoPackage}
+import sbtbuildinfo.{BuildInfoKey, BuildInfoOption}
+import scala.sys.process._
+
 name := """service-chassis"""
 
 organization := "allawala"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.10"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -217,7 +223,7 @@ dockerfile in docker := {
 
 // releasing with the gitflow plugin
 import sbtrelease._
-import com.servicerocket.sbt.release.git.flow.Steps._
+import allawala.sbt.sbtrelease.gitflow.Steps._
 import sbtrelease.ReleaseStateTransformations._
 
 releaseProcess := Seq(
@@ -245,8 +251,8 @@ mappings in (Compile, packageBin) ~= { seq =>
   }
 }
 
-// Dependency tree
-dependencyDotFile := file("dependencies.dot") //render dot file to `./dependencies.dot`
+// Dependency Graph tree
+//dependencyDotFile := file("dependencies.dot") //render dot file to `./dependencies.dot`
 
 initialCommands :=
   """
@@ -256,6 +262,9 @@ import akka.util._
 import scala.concurrent._
 import scala.concurrent.duration._
   """.stripMargin
+
+resolvers += "Git Flow Snapshots" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/sbt-gitflow/snapshots"
+resolvers += "Git Flow Releases" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/sbt-gitflow/releases"
 
 fork in run := true
 // Running `sbt test` hangs without the following line, possibly due to https://github.com/sbt/sbt/issues/3022

@@ -1,7 +1,7 @@
 ## Current Release Version
-1.0.7
+1.0.8
 
-Compatible with sbt 0.13.x
+Compatible with sbt 1.3.x
 
 ## Commit Messages
 
