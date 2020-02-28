@@ -3,7 +3,7 @@ package allawala.chassis.auth.shiro.route
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.{Directive0, Directive1, Directives}
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import allawala.ResponseFE
 import allawala.chassis.auth.exception.{AuthenticationException, AuthorizationException}
 import allawala.chassis.auth.shiro.model.AuthenticatedSubject
@@ -26,7 +26,7 @@ trait RouteSecurity extends Directives with StrictLogging {
   import RouteSecurity._
 
   def authService: ShiroAuthService
-  implicit def am: ActorMaterializer
+  implicit def am: Materializer
 
   val onAuthenticated: Directive1[Subject] = {
     extractRequest tflatMap { request =>
