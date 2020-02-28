@@ -1,3 +1,3 @@
-resolvers += Resolver.jcenterRepo
+resolvers += "Git Flow Releases" at "https://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/sbt-gitflow/releases"
 
-addSbtPlugin("com.servicerocket" % "sbt-git-flow" % "0.1.2")
+addSbtPlugin("allawala" % "sbt-gitflow" % "0.1")
