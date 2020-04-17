@@ -22,6 +22,10 @@ class I18nService @Inject()(val languageConfig: LanguageConfig) extends StrictLo
     getMessage(code, messageParameters, getLanguage(request))
   }
 
+  def get(code: String, langLoc: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+    getMessage(code, messageParameters, getLang(langLoc))
+  }
+
   protected[service] def getLanguage(request: HttpRequest) = {
     val query = request.uri.query()
     val opt = if (languageConfig.parameter.isDefined && query.get(languageConfig.parameter.get).isDefined) {
