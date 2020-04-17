@@ -16,27 +16,27 @@ class I18nService @Inject()(val languageConfig: LanguageConfig) extends StrictLo
   protected val DefaultLang = Lang("en")
 
   // Logging messages should be independent of the client's locale
-  def getForDefaultLocale(code: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+  def getForDefaultLocale(code: String, messageParameters: Seq[Any] = Seq.empty): String = {
     getMessage(code, messageParameters, DefaultLang)
   }
 
-  def getForDefaultLocaleFromResource(resource: String, code: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+  def getForDefaultLocaleFromResource(resource: String, code: String, messageParameters: Seq[Any] = Seq.empty): String = {
     getMessage(resource, code, messageParameters, DefaultLang)
   }
 
-  def getForRequest(request: HttpRequest, code: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+  def getForRequest(request: HttpRequest, code: String, messageParameters: Seq[Any] = Seq.empty): String = {
     getMessage(code, messageParameters, getLanguage(request))
   }
 
-  def getForRequestFromResource(request: HttpRequest, resource: String, code: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+  def getForRequestFromResource(request: HttpRequest, resource: String, code: String, messageParameters: Seq[Any] = Seq.empty): String = {
     getMessage(resource, code, messageParameters, getLanguage(request))
   }
 
-  def get(code: String, langLoc: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+  def get(code: String, langLoc: String, messageParameters: Seq[Any] = Seq.empty): String = {
     getMessage(code, messageParameters, getLang(langLoc))
   }
 
-  def getFromResource(resource: String, code: String, langLoc: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+  def getFromResource(resource: String, code: String, langLoc: String, messageParameters: Seq[Any] = Seq.empty): String = {
     getMessage(resource, code, messageParameters, getLang(langLoc))
   }
 
@@ -63,18 +63,18 @@ class I18nService @Inject()(val languageConfig: LanguageConfig) extends StrictLo
     }
   }
 
-  private def getMessage(resource: String, code: String, messageParameters: Seq[AnyRef], lang: Lang): String = {
+  private def getMessage(resource: String, code: String, messageParameters: Seq[Any], lang: Lang): String = {
     getI18nMessage(Some(resource), code, messageParameters, lang)
   }
 
-  private def getMessage(code: String, messageParameters: Seq[AnyRef], lang: Lang): String = {
+  private def getMessage(code: String, messageParameters: Seq[Any], lang: Lang): String = {
     getI18nMessage(None, code, messageParameters, lang)
   }
 
     /*
     We need to cater for not finding the message for the provided code and not throw and exception
    */
-  private def getI18nMessage(resource: Option[String], code: String, messageParameters: Seq[AnyRef], lang: Lang): String = {
+  private def getI18nMessage(resource: Option[String], code: String, messageParameters: Seq[Any], lang: Lang): String = {
     Try(I18nMessages(resource, code, messageParameters:_*)(lang)) match {
       case Success(msg) =>
         msg
