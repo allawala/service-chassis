@@ -1,29 +1,43 @@
 package allawala.chassis.i18n.service
 
 import java.util.Locale
-import javax.inject.Inject
 
+import javax.inject.Inject
 import akka.http.scaladsl.model.HttpRequest
 import allawala.chassis.config.model.LanguageConfig
-import com.osinka.i18n.{Lang, Messages}
+import allawala.chassis.i18n.I18nMessages
+import com.osinka.i18n.Lang
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.util.{Failure, Success, Try}
 
 class I18nService @Inject()(val languageConfig: LanguageConfig) extends StrictLogging {
+  // TODO move default lang to conf
   protected val DefaultLang = Lang("en")
 
   // Logging messages should be independent of the client's locale
-  def getDefaultLocale(code: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+  def getForDefaultLocale(code: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
     getMessage(code, messageParameters, DefaultLang)
   }
 
-  def get(request: HttpRequest, code: String, messageParameters: Seq[AnyRef]): String = {
+  def getForDefaultLocaleFromResource(resource: String, code: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+    getMessage(resource, code, messageParameters, DefaultLang)
+  }
+
+  def getForRequest(request: HttpRequest, code: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
     getMessage(code, messageParameters, getLanguage(request))
+  }
+
+  def getForRequestFromResource(request: HttpRequest, resource: String, code: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+    getMessage(resource, code, messageParameters, getLanguage(request))
   }
 
   def get(code: String, langLoc: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
     getMessage(code, messageParameters, getLang(langLoc))
+  }
+
+  def getFromResource(resource: String, code: String, langLoc: String, messageParameters: Seq[AnyRef] = Seq.empty): String = {
+    getMessage(resource, code, messageParameters, getLang(langLoc))
   }
 
   protected[service] def getLanguage(request: HttpRequest) = {
@@ -49,11 +63,19 @@ class I18nService @Inject()(val languageConfig: LanguageConfig) extends StrictLo
     }
   }
 
-  /*
+  private def getMessage(resource: String, code: String, messageParameters: Seq[AnyRef], lang: Lang): String = {
+    getI18nMessage(Some(resource), code, messageParameters, lang)
+  }
+
+  private def getMessage(code: String, messageParameters: Seq[AnyRef], lang: Lang): String = {
+    getI18nMessage(None, code, messageParameters, lang)
+  }
+
+    /*
     We need to cater for not finding the message for the provided code and not throw and exception
    */
-  private def getMessage(code: String, messageParameters: Seq[AnyRef], lang: Lang): String = {
-    Try(Messages(code, messageParameters:_*)(lang)) match {
+  private def getI18nMessage(resource: Option[String], code: String, messageParameters: Seq[AnyRef], lang: Lang): String = {
+    Try(I18nMessages(resource, code, messageParameters:_*)(lang)) match {
       case Success(msg) =>
         msg
       case Failure(e) =>
