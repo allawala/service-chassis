@@ -1,7 +1,7 @@
 package allawala.chassis.http.route
 
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
-import akka.http.scaladsl.model.StatusCode
+import akka.http.scaladsl.model.{HttpResponse, StatusCode}
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.{Directives, Route}
 import allawala.chassis.core.exception.DomainException
@@ -9,7 +9,6 @@ import allawala.{ResponseE, ResponseFE}
 import cats.data.EitherT
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import org.slf4j.MDC
-
 import scala.concurrent.Future
 
 trait RouteSupport
@@ -18,6 +17,13 @@ trait RouteSupport
     with RouteLogging {
 
   val XCorrelationId = "X-CORRELATION-ID"
+
+  def onCompleteEitherHttpWithResponse(response: ResponseFE[HttpResponse]): Route = {
+    onSuccess(response) {
+      case Left(e) => fail(e)
+      case Right(t) => complete(t)
+    }
+  }
 
   def onCompleteEither[T: ToEntityMarshaller](resource: ResponseFE[T]): Route =
     onCompleteEither(OK)(resource)
