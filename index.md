@@ -1427,7 +1427,8 @@ class MyConfigModule extends ConfigModule {
       .withFallback(defaultConfig)
   }
 
-}```
+}
+```
 
 #### SWAGGER
 
