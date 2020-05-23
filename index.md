@@ -59,7 +59,9 @@ object MyApp extends Microservice with App {
 }
 ```
 
-Create a **messages.txt** file in the _src/main/resources_ folder and copy the contents of the **messages.txt** file from the **chassis's** _src/main/resources_ folder
+Create a **messages.properties** file in the _src/main/resources_ folder and copy the contents of the **messages.properties** file from the **chassis's** _src/main/resources_ folder
+
+**NOTE** versions prior to 1.0.8 defined the resource as messages.txt. However .properties file plays a lot better with platforms like crowdin 
 
 Run the application
 ```scala
@@ -427,9 +429,9 @@ trait DomainException extends Exception {
 
 - **statusCode** is the akka http status code to be returned as part of the response eg **StatusCodes.InternalServerError** i.e **500**
 
-- **errorCode** is the key to look up the actual error message defined in the _messages.txt_ file
+- **errorCode** is the key to look up the actual error message defined in the _messages.properties_ file
 
-- **messageParameters** are the values that will be substituted if the message corresponding to the **errorCode** is templated in the _messages.txt_ file
+- **messageParameters** are the values that will be substituted if the message corresponding to the **errorCode** is templated in the _messages.properties_ file
 
 - **logMap** contains any additional information that the service might wish to log on failure but does not want expose this information to the client side in the response.
 This may be helpful for debugging purposes
@@ -444,7 +446,7 @@ class UserServiceImpl extends UserService {
 }
 ```
 
-and in the _messages.txt_ file
+and in the _messages.properties_ file
 ```
 email.already.in.use=email {0} is already in use, please use a different email
 ```
@@ -455,11 +457,11 @@ If the result is a **Future[Left[_ <: DomainException]]** or if its a failed **F
 
 -  this exception will be turned into a standardized **HttpErrorLog** and logged as an error. This error log wil also contain the http method and url.
 
-   **NOTE** the error log will only get the values for the **errorCode** key from the default _messages.txt_ file and will ignore any language or locale specific files
+   **NOTE** the error log will only get the values for the **errorCode** key from the default _messages.properties_ file and will ignore any language or locale specific files
 
 - The exception will be turned into a standardized **ErrorEnvelope** and returned as the response payload with the appropriate **NON** 2xx status code
 
-   **NOTE** the error log will get the values for the **errorCode** key from the language or locale specific messages file or default back to _messages.txt_. (more on how that is selected later)
+   **NOTE** the error log will get the values for the **errorCode** key from the language or locale specific messages file or default back to _messages.properties_. (more on how that is selected later)
 
 Example response on a failure
 
@@ -473,7 +475,7 @@ Example response on a failure
 }
 ```
 
-**NOTE** language or locale specific messages files are only necessary if the I18N is being handled by the server side. If it will be handled on the client side, only the default _messages.txt_ file is needed. The client side can handle the I18N using the returned **errorCode** in the payload
+**NOTE** language or locale specific messages files are only necessary if the I18N is being handled by the server side. If it will be handled on the client side, only the default _messages.properties_ file is needed. The client side can handle the I18N using the returned **errorCode** in the payload
 
 
 Currently chassis provides the following concrete **DomainException** implementations
@@ -616,7 +618,7 @@ The client side can view the "errorCode"/"errorMessage" as a global message for 
 individual field level
 
 **NOTE** If the client side wants to handle the I18N, it can use the "errorCode" from the main payload and the "key" from the details section to provide thea appropriate messages.
-The server side then only needs to provide the default _messages.txt_ file
+The server side then only needs to provide the default _messages.properties_ file
 
 To define custom validation, first define a class extending the **ValidationError** trait
 
@@ -630,9 +632,9 @@ trait ValidationError {
 
 - **field** is the name of the field being validated, eg "email" or "address.city"
 
-- **code** is the key that will be used to lookup the actual validation error message in the _messages.txt_ file
+- **code** is the key that will be used to lookup the actual validation error message in the _messages.properties_ file
 
-- **parameters** are values that will be substituted if the message corresponding to the code is templated in the _messages.txt_ file
+- **parameters** are values that will be substituted if the message corresponding to the code is templated in the _messages.properties_ file
 
 Eg.
 ```scala
@@ -659,7 +661,7 @@ trait ValidateEmail {
 }
 ```
 
-In the _messages.txt_ file add
+In the _messages.properties_ file add
 ```
 validation.error.email=invalid email
 ```
@@ -743,7 +745,7 @@ trait ValidateEqual {
 }
 ```
 
-and in the _messages.txt_
+and in the _messages.properties_
 ```
 validation.error.not.equal=must be equal to {0}
 ```
@@ -1347,7 +1349,7 @@ to complete, its probably better to run them async from the hooks and let the ho
 
 Internationalization support is currently only hooked into the responses returned in case of errors. Logging uses the values from default language which at the moment is english.
 
-Language specific messages are in the _messages_XXX.txt_ files
+Language specific messages are in the _messages_XXX.properties_ files
 
 The file selection is driven by the configuration
 ```
@@ -1365,7 +1367,9 @@ Using the config, the chassis will go through the following steps until it succe
 
 - default to "EN"
 
-- default to _messages.txt_ file.
+- default to _messages.properties_ file.
+
+I18nService can also directly be used to get translated messages from property files via the various api calls, which also allow you to specify custom property file names
 
 **NOTE** one of the improvements planned for the future is to allow default language to be configured
 
@@ -1426,6 +1430,7 @@ class MyConfigModule extends ConfigModule {
 }```
 
 #### SWAGGER
+
 In the **build.sbt**
 
 ```scala
