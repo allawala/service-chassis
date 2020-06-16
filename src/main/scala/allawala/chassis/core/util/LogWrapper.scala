@@ -15,7 +15,7 @@ trait LogWrapper extends StrictLogging {
     val errorLog = ErrorLog(
       errorType = e.errorType,
       errorCode = e.errorCode,
-      errorMessage = i18nService.getForDefaultLocale(e.errorCode, Seq.empty),
+      errorMessage = i18nService.getForDefaultLocale(e.errorCode, e.messageParameters),
       thread = e.thread,
       payload = e.logMap.mapValues(_.toString),
       details = getErrorPayload(e)
