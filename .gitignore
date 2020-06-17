@@ -34,3 +34,4 @@ logs
 /_site/
 /Gemfile
 /Gemfile.lock
+/.java-version
