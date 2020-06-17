@@ -1,7 +1,7 @@
 package allawala.chassis.http.route
 
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
-import akka.http.scaladsl.model.StatusCode
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.{Directives, Route}
 import allawala.chassis.core.exception.DomainException
@@ -18,6 +18,12 @@ trait RouteSupport
     with RouteLogging {
 
   val XCorrelationId = "X-CORRELATION-ID"
+
+  def onRedirectEither(resource: ResponseFE[String]): Route =
+    onSuccess(resource) {
+      case Left(e) => fail(e)
+      case Right(url) => redirect(url, StatusCodes.TemporaryRedirect)
+    }
 
   def onCompleteEither[T: ToEntityMarshaller](resource: ResponseFE[T]): Route =
     onCompleteEither(OK)(resource)

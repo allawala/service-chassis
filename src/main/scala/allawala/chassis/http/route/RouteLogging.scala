@@ -18,7 +18,7 @@ trait RouteLogging extends StrictLogging {
       uri = request.uri.toString(),
       errorType = e.errorType,
       errorCode = e.errorCode,
-      errorMessage = i18nService.getDefaultLocale(e.errorCode, e.messageParameters), // logging is always be in english
+      errorMessage = i18nService.getForDefaultLocale(e.errorCode, e.messageParameters), // logging is always be in english
       thread = e.thread,
       payload = e.logMap.mapValues(_.toString),
       validationPayload = getErrorPayload(request, e)
@@ -32,7 +32,7 @@ trait RouteLogging extends StrictLogging {
     errorType = e.errorType,
     correlationId = correlationId,
     errorCode = e.errorCode,
-    errorMessage = i18nService.get(request, e.errorCode, e.messageParameters),
+    errorMessage = i18nService.getForRequest(request, e.errorCode, e.messageParameters),
     details = getErrorPayload(request, e)
   )
 
@@ -41,7 +41,7 @@ trait RouteLogging extends StrictLogging {
       case ve: ValidationException =>
         ve.validationErrors.toList.groupBy(_.field).mapValues { grouped =>
           grouped map { g =>
-            val message = i18nService.get(request, g.code, g.parameters)
+            val message = i18nService.getForRequest(request, g.code, g.parameters)
             ValidationEnvelope(g.code, message)
           }
         }
