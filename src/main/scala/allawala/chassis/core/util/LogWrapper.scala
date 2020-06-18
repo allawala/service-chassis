@@ -22,6 +22,7 @@ trait LogWrapper extends StrictLogging {
     )
 
     logger.error(errorLog.asJson.noSpaces, e)
+    Option(e.cause).foreach(logger.error("caused by", _))
   }
 
   def logErrorEither(f: => Either[DomainException, _]): Unit = {
