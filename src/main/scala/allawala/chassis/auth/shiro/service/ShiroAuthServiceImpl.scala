@@ -1,7 +1,5 @@
 package allawala.chassis.auth.shiro.service
 
-import javax.inject.{Inject, Named}
-
 import allawala.ResponseFE
 import allawala.chassis.auth.exception.AuthenticationException
 import allawala.chassis.auth.model.{JWTSubject, PrincipalType, RefreshToken}
@@ -10,6 +8,7 @@ import allawala.chassis.auth.shiro.model.{AuthenticatedSubject, JWTAuthenticatio
 import allawala.chassis.config.model.{Auth, RefreshStrategy}
 import allawala.chassis.core.exception.DomainException
 import allawala.chassis.util.DateTimeProvider
+import javax.inject.{Inject, Named}
 import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.subject.Subject
 
@@ -212,7 +211,7 @@ class ShiroAuthServiceImpl @Inject()(
     }
   }
 
-  private def authenticateJwtSubject[T](jwtSubject: JWTSubject)(f: Subject => T) = {
+  protected def authenticateJwtSubject[T](jwtSubject: JWTSubject)(f: Subject => T) = {
     Try {
       val subject = buildSubject
       subject.login(JWTAuthenticationToken(jwtSubject))
