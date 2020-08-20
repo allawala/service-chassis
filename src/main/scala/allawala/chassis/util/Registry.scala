@@ -12,4 +12,12 @@ trait Registry[T] {
   def get(): Seq[T] = {
     registry.values.toSeq
   }
+
+  def find(f: T => Boolean): Option[T]= {
+    registry.values.find(f)
+  }
+
+  def findUnsafe(f: T => Boolean): T= {
+    registry.values.find(f).getOrElse(throw new RuntimeException("not found in registry"))
+  }
 }
