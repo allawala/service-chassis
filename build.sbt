@@ -28,10 +28,10 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= {
-  val akkaVersion = "2.6.1"
-  val akkaHttpCorsVersion = "0.4.2"
-  val akkaHttpVersion = "10.1.11"
-  val akkaHttpCirceVersion = "1.30.0"
+  val akkaVersion = "2.6.10"
+  val akkaHttpCorsVersion = "1.1.0"
+  val akkaHttpVersion = "10.2.1"
+  val akkaHttpCirceVersion = "1.35.0"
   val beanUtilsVersion = "1.9.4"
   val bouncyCastleVersion = "1.64"
   val circeVersion = "0.12.3"
@@ -58,6 +58,7 @@ libraryDependencies ++= {
     // Akka
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
     "ch.megard" %% "akka-http-cors" % akkaHttpCorsVersion,
+    "com.typesafe.akka" %% "akka-stream" % akkaVersion,
 
     // BeanUtils
     "commons-beanutils" % "commons-beanutils" % beanUtilsVersion,

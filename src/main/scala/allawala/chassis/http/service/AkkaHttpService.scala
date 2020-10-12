@@ -36,8 +36,7 @@ class AkkaHttpService @Inject()(
   }
 
   private def bind() = {
-    Http().bindAndHandle(routes.route, baseConfig.httpConfig.host, baseConfig.httpConfig.port).onComplete {
-
+    Http().newServerAt(baseConfig.httpConfig.host, baseConfig.httpConfig.port).bindFlow(routes.route).onComplete {
       case Success(b) => {
         logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****.")
         printLogbackConfig()
