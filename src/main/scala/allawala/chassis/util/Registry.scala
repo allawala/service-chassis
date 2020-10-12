@@ -20,4 +20,8 @@ trait Registry[T] {
   def findUnsafe(f: T => Boolean): T= {
     registry.values.find(f).getOrElse(throw new RuntimeException("not found in registry"))
   }
+
+  def findAll(f: T => Boolean): Seq[T] = {
+    registry.values.filter(f).toSeq
+  }
 }
