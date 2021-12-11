@@ -28,10 +28,10 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= {
-  val akkaVersion = "2.6.1"
-  val akkaHttpCorsVersion = "0.4.2"
-  val akkaHttpVersion = "10.1.11"
-  val akkaHttpCirceVersion = "1.30.0"
+  val akkaVersion = "2.6.10"
+  val akkaHttpCorsVersion = "1.1.0"
+  val akkaHttpVersion = "10.2.1"
+  val akkaHttpCirceVersion = "1.35.0"
   val beanUtilsVersion = "1.9.4"
   val bouncyCastleVersion = "1.64"
   val circeVersion = "0.12.3"
@@ -50,7 +50,6 @@ libraryDependencies ++= {
   val scalaI18nVersion = "1.0.2"
   val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
-  val slf4jVersion = "1.7.25"
   val shiroVersion = "1.4.0"
   val threeTenExtraVersion = "1.2"
 
@@ -58,6 +57,7 @@ libraryDependencies ++= {
     // Akka
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
     "ch.megard" %% "akka-http-cors" % akkaHttpCorsVersion,
+    "com.typesafe.akka" %% "akka-stream" % akkaVersion,
 
     // BeanUtils
     "commons-beanutils" % "commons-beanutils" % beanUtilsVersion,
@@ -94,8 +94,6 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
-    "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
-    "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
 
     // Metrics
     "nl.grons" %% "metrics-scala" % metricsVersion,
