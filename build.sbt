@@ -50,7 +50,6 @@ libraryDependencies ++= {
   val scalaI18nVersion = "1.0.2"
   val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
-  val slf4jVersion = "1.7.25"
   val shiroVersion = "1.4.0"
   val threeTenExtraVersion = "1.2"
 
@@ -95,8 +94,6 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
-    "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
-    "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
 
     // Metrics
     "nl.grons" %% "metrics-scala" % metricsVersion,
