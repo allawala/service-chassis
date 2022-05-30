@@ -1,7 +1,24 @@
-## Current Release Version
-1.0.8
+## Release Information
+| Java Version | Release          | Scala Compatibility |
+|--------------|------------------|---------------------|
+| JDK-11       | 1.0.13 or higher | 2.12                |
+| JDK-8        | 1.0.12 or lower  | 2.12                | 
 
-Compatible with sbt 1.3.x
+Latest version : 1.0.13
+
+Releases
+
+    "allawala" %% "service-chassis" % {version}
+
+Snapshot
+
+    "allawala" %% "service-chassis" % {version--SNAPSHOT}
+
+Resolvers
+
+    resolvers += "Service Chassis Snapshots" at "https://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/service-chassis/snapshots"
+    resolvers += "Service Chassis Releases" at "https://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/service-chassis/releases"
+
 
 ## Commit Messages
 
@@ -24,8 +41,10 @@ see [git-commit](https://chris.beams.io/posts/git-commit/) for an acceptable com
 `sbt removeDangling`
 - release **
 `sbt release`
+- publish locally
+  `sbt publishLocal`
 - publish to s3
-`sbt publish`
+  `sbt publish`
 - generate dependency graph
 `sbt dependencyTree`
 - run local docker image

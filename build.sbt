@@ -8,7 +8,7 @@ name := """service-chassis"""
 
 organization := "allawala"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.12.15"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -40,13 +40,13 @@ libraryDependencies ++= {
   val enumeratumVersion = "1.5.13"
   val enumeratumCirceVersion = "1.5.22"
   val ficusVersion = "1.4.7"
-  val groovyVersion = "2.4.10"
-  val guiceVersion = "4.1.0"
-  val scalaGuiceVersion = "4.1.0"
+  val groovyVersion = "3.0.10"
+  val guiceVersion = "5.0.1"
+  val scalaGuiceVersion = "5.0.1"
   val jwtCirceVersion = "4.1.0"
   val logbackVersion = "1.2.3"
   val metricsVersion = "3.5.6_a2.4"
-  val mockitoVersion = "2.8.47"
+  val mockitoVersion = "3.11.2"
   val scalaI18nVersion = "1.0.2"
   val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
@@ -90,7 +90,7 @@ libraryDependencies ++= {
     "com.pauldijou" %% "jwt-circe" % jwtCirceVersion,
 
     // Logging
-    "org.codehaus.groovy" % "groovy-all" % groovyVersion, // To allow log config to be defined in groovy
+    "org.codehaus.groovy" % "groovy" % groovyVersion, // To allow log config to be defined in groovy
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
