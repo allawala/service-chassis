@@ -1,8 +1,8 @@
 ## Release Information
-| Java Version | Release          | Scala Compatibility |
-|--------------|------------------|---------------------|
-| JDK-11       | 1.0.13 or higher | 2.12                |
-| JDK-8        | 1.0.12 or lower  | 2.12                | 
+| Release          | Scala Compatibility | Java Compatibility |
+|------------------|---------------------|--------------------|
+| 1.0.13 or higher | 2.12                | JDK-11             |
+| 1.0.12 or lower  | 2.12                | JDK-8              | 
 
 Latest version : 1.0.13
 

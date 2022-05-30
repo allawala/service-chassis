@@ -43,6 +43,7 @@ libraryDependencies ++= {
   val groovyVersion = "3.0.10"
   val guiceVersion = "5.0.1"
   val scalaGuiceVersion = "5.0.1"
+  val jakartaXmlBindVersion = "4.0.0"
   val jwtCirceVersion = "4.1.0"
   val logbackVersion = "1.2.3"
   val metricsVersion = "3.5.6_a2.4"
@@ -88,6 +89,8 @@ libraryDependencies ++= {
 
     // JWT
     "com.pauldijou" %% "jwt-circe" % jwtCirceVersion,
+
+    "jakarta.xml.bind" % "jakarta.xml.bind-api" % jakartaXmlBindVersion,
 
     // Logging
     "org.codehaus.groovy" % "groovy" % groovyVersion, // To allow log config to be defined in groovy
