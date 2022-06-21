@@ -15,7 +15,7 @@ class ConfigModule extends AbstractModule with ScalaModule {
    This is created here instead of within the getConfig provider is because we do not have access to the provider in the logback
    groovy configuration and calling getconfig directly would have loaded the configuration again.
   */
-  private val environment = sys.env.get("ENV").flatMap(Environment.withNameInsensitiveOption).getOrElse(Local)
+  private val environment = loadEnvironment()
   private val config = loadEnvConfig
 
   override def configure(): Unit = {}
@@ -69,5 +69,9 @@ class ConfigModule extends AbstractModule with ScalaModule {
 
   protected def loadConfig(environment: Environment): Config = {
     ConfigFactory.load()
+  }
+
+  protected def loadEnvironment(): Environment = {
+    sys.env.get("ENV").flatMap(Environment.withNameInsensitiveOption).getOrElse(Local)
   }
 }
