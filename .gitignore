@@ -35,3 +35,4 @@ logs
 /Gemfile
 /Gemfile.lock
 /.java-version
+/.bsp
