@@ -27,6 +27,7 @@ class AkkaHttpService @Inject()(
                                ) extends LogWrapper {
 
   def run(): Unit = {
+    printLogbackConfig()
     executeLifeCycleEventsAndThen("PRE START", Future.sequence(lifecycleAwareRegistryProvider.get().get().map(_.preStart()))) {
       bind()
     } {
@@ -39,8 +40,6 @@ class AkkaHttpService @Inject()(
     Http().newServerAt(baseConfig.httpConfig.host, baseConfig.httpConfig.port).bindFlow(routes.route).onComplete {
       case Success(b) => {
         logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****.")
-        printLogbackConfig()
-
         executeLifeCycleEventsAndThen("POST START", Future.sequence(lifecycleAwareRegistryProvider.get().get().map(_.postStart()))) {
           () // If successful, do nothing
         } {
