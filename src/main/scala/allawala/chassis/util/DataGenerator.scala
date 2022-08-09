@@ -1,10 +1,11 @@
 package allawala.chassis.util
 
+import jakarta.xml.bind.DatatypeConverter
+
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
-import javax.xml.bind.DatatypeConverter
 
 class DataGenerator {
   def uuid: UUID = UUID.randomUUID()

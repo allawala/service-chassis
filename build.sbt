@@ -8,7 +8,7 @@ name := """service-chassis"""
 
 organization := "allawala"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.12.15"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -40,17 +40,18 @@ libraryDependencies ++= {
   val enumeratumVersion = "1.5.13"
   val enumeratumCirceVersion = "1.5.22"
   val ficusVersion = "1.4.7"
-  val groovyVersion = "2.4.10"
-  val guiceVersion = "4.1.0"
-  val scalaGuiceVersion = "4.1.0"
+  val groovyVersion = "3.0.10"
+  val guiceVersion = "5.0.1"
+  val scalaGuiceVersion = "5.0.1"
+  val jakartaXmlBindVersion = "4.0.0"
   val jwtCirceVersion = "4.1.0"
   val logbackVersion = "1.2.3"
   val metricsVersion = "3.5.6_a2.4"
-  val mockitoVersion = "2.8.47"
+  val mockitoVersion = "3.11.2"
   val scalaI18nVersion = "1.0.2"
   val scalaLoggingVersion = "3.5.0"
   val scalatestVersion = "3.0.1"
-  val shiroVersion = "1.4.0"
+  val shiroVersion = "1.9.0"
   val threeTenExtraVersion = "1.2"
 
   Seq(
@@ -89,8 +90,10 @@ libraryDependencies ++= {
     // JWT
     "com.pauldijou" %% "jwt-circe" % jwtCirceVersion,
 
+    "jakarta.xml.bind" % "jakarta.xml.bind-api" % jakartaXmlBindVersion,
+
     // Logging
-    "org.codehaus.groovy" % "groovy-all" % groovyVersion, // To allow log config to be defined in groovy
+    "org.codehaus.groovy" % "groovy" % groovyVersion, // To allow log config to be defined in groovy
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
@@ -158,13 +161,13 @@ removeDangling := {
 
 // docker
 // TODO review these options
-buildOptions in docker := BuildOptions(
+docker / buildOptions := BuildOptions(
   //  cache = false,
   removeIntermediateContainers = BuildOptions.Remove.Always
   //  pullBaseImage = BuildOptions.Pull.Always
 )
 
-imageNames in docker := {
+docker / imageNames := {
   val registry = "xxxxx.dkr.ecr.eu-central-1.amazonaws.com/xxxxx"
 
   def withSha: ImageName = {
@@ -205,7 +208,7 @@ imageNames in docker := {
   Seq(imageName)
 }
 
-dockerfile in docker := {
+docker / dockerfile := {
   val exposePort = 8080
   // The assembly task generates a fat JAR file
   val artifact: File = assembly.value
@@ -241,7 +244,7 @@ releaseProcess := Seq(
   pushChanges
 )
 
-mappings in (Compile, packageBin) ~= { seq =>
+Compile / packageBin  / mappings ~= { seq =>
   seq.filter{
     case (file, _) =>
       val fileName = file.getName
@@ -264,6 +267,6 @@ import scala.concurrent.duration._
 resolvers += "Git Flow Snapshots" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/sbt-gitflow/snapshots"
 resolvers += "Git Flow Releases" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/sbt-gitflow/releases"
 
-fork in run := true
+run / fork := true
 // Running `sbt test` hangs without the following line, possibly due to https://github.com/sbt/sbt/issues/3022
-parallelExecution in Test := false
+Test / parallelExecution := false
