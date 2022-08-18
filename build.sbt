@@ -2,6 +2,7 @@ import sbt.Keys._
 import sbt._
 import sbtbuildinfo.BuildInfoKeys.{buildInfoKeys, buildInfoOptions, buildInfoPackage}
 import sbtbuildinfo.{BuildInfoKey, BuildInfoOption}
+
 import scala.sys.process._
 
 name := """service-chassis"""
@@ -90,7 +91,7 @@ libraryDependencies ++= {
     // JWT
     "com.pauldijou" %% "jwt-circe" % jwtCirceVersion,
 
-    "jakarta.xml.bind" % "jakarta.xml.bind-api" % jakartaXmlBindVersion,
+    "jakarta.xml.bind" % "jakarta.xml.bind-api" % jakartaXmlBindVersion excludeAll ExclusionRule(organization = "jakarta.activation"),
 
     // Logging
     "org.codehaus.groovy" % "groovy" % groovyVersion, // To allow log config to be defined in groovy
@@ -119,7 +120,7 @@ libraryDependencies ++= {
 }
 
 // plugins
-enablePlugins(BuildInfoPlugin, GitVersioning, GitBranchPrompt, DockerPlugin)
+enablePlugins(BuildInfoPlugin, GitVersioning, GitBranchPrompt, sbtdocker.DockerPlugin, JavaAppPackaging)
 
 // BuildInfo plugin Settings
 buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, git.gitCurrentBranch, git.gitHeadCommit)
@@ -201,8 +202,7 @@ docker / imageNames := {
   val imageName = sys.env.get("BRANCH_NAME").map(_.toLowerCase) match {
     case Some("develop") => withSha
     case Some("master") => withoutSha
-    case _ =>
-      latest
+    case _ => latest
   }
 
   Seq(imageName)
@@ -211,14 +211,14 @@ docker / imageNames := {
 docker / dockerfile := {
   val exposePort = 8080
   // The assembly task generates a fat JAR file
-  val artifact: File = assembly.value
-  val artifactTargetPath = s"/opt/${name.value}/${artifact.name}"
+  val appDir: File = stage.value
+  val targetDir = "/opt"
 
   new Dockerfile {
-    from("hseeberger/scala-sbt:8u141-jdk_2.12.3_0.13.16")
+    from("hseeberger/scala-sbt:11.0.14.1_1.6.2_2.12.15")
     expose(exposePort)
-    copy(artifact, artifactTargetPath)
-    entryPoint("java", "-jar", artifactTargetPath)
+    entryPoint(s"$targetDir/bin/${executableScriptName.value}")
+    copy(appDir, targetDir)
   }
 }
 
