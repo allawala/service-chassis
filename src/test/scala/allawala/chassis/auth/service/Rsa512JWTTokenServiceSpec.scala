@@ -31,7 +31,7 @@ class Rsa512JWTTokenServiceSpec extends BaseSpec with DateTimeSpec with RSASpec 
       new Fixture {
         val token = service.generateToken(PrincipalType.User, "uuid", Duration.ofDays(1L))
 
-        val result = service.decodeToken(token).right.get
+        val result = service.decodeToken(token).toOption.get
 
         result.principalType should ===(PrincipalType.User)
         result.principal should ===("uuid")
@@ -53,7 +53,7 @@ class Rsa512JWTTokenServiceSpec extends BaseSpec with DateTimeSpec with RSASpec 
       new Fixture {
         val token = service.generateToken(PrincipalType.User, "uuid", Duration.ofDays(-1L))
 
-        val result = service.decodeExpiredToken(token).right.get
+        val result = service.decodeExpiredToken(token).toOption.get
 
         result.principalType should ===(PrincipalType.User)
         result.principal should ===("uuid")

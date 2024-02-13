@@ -1,7 +1,7 @@
 ## Release Information
 | Release          | Scala Compatibility | Java Compatibility |
 |------------------|---------------------|--------------------|
-| 1.0.14 or higher | 2.12                | JDK-11             |
+| 1.0.14 or higher | 2.13                | JDK-11             |
 | 1.0.13 or lower  | 2.12                | JDK-8              | 
 
 Latest version : 1.0.14

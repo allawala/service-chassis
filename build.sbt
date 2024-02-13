@@ -9,7 +9,7 @@ name := """service-chassis"""
 
 organization := "allawala"
 
-scalaVersion := "2.12.15"
+scalaVersion := "2.13.8"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -17,12 +17,10 @@ scalacOptions ++= Seq(
   "-unchecked", // Enable additional warnings where generated code depends on assumptions.
   "-Xfatal-warnings", // Fail the compilation if there are any warnings.
   "-Xlint", // Enable recommended additional warnings.
-  "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver.
+  "-Xlint:-byname-implicit", // To disable Block result was adapted via implicit conversion (method apply) taking a by-name parameter
   "-Ywarn-dead-code", // Warn when dead code is identified.
-  "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures.
-  "-Ywarn-nullary-override", // Warn when non-nullary overrides nullary, e.g. def foo() over def foo.
   "-Ywarn-numeric-widen", // Warn when numerics are widened.
-  "-target:jvm-1.8",
+  "-target:11",
   "-encoding", "UTF-8",
   "-language:existentials",
   "-language:higherKinds"
@@ -45,14 +43,14 @@ libraryDependencies ++= {
   val guiceVersion = "5.0.1"
   val scalaGuiceVersion = "5.0.1"
   val jakartaXmlBindVersion = "4.0.0"
-  val jwtCirceVersion = "4.1.0"
+  val jwtCirceVersion = "5.0.0"
   val logbackVersion = "1.2.3"
-  val metricsVersion = "3.5.6_a2.4"
+  val metricsVersion = "4.2.9"
   val mockitoVersion = "3.11.2"
-  val scalaI18nVersion = "1.0.2"
-  val scalaLoggingVersion = "3.5.0"
-  val scalatestVersion = "3.0.1"
-  val shiroVersion = "1.9.0"
+  val scalaI18nVersion = "1.0.3"
+  val scalaLoggingVersion = "3.9.5"
+  val scalatestVersion = "3.0.8"
+  val shiroVersion = "1.9.1"
   val threeTenExtraVersion = "1.2"
 
   Seq(
@@ -100,11 +98,11 @@ libraryDependencies ++= {
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
 
     // Metrics
-    "nl.grons" %% "metrics-scala" % metricsVersion,
+    "nl.grons" %% "metrics4-scala" % metricsVersion,
 
     // Shiro
     "org.apache.shiro" % "shiro-core" % shiroVersion,
-    "org.apache.shiro" % "shiro-guice" % shiroVersion,
+    "org.apache.shiro" % "shiro-guice" % shiroVersion excludeAll ExclusionRule(organization = "com.google.inject.extensions"),
 
     // Threeten Extras
     "org.threeten" % "threeten-extra" % threeTenExtraVersion,

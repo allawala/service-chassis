@@ -20,7 +20,7 @@ trait RouteLogging extends StrictLogging {
       errorCode = e.errorCode,
       errorMessage = i18nService.getForDefaultLocale(e.errorCode, e.messageParameters), // logging is always be in english
       thread = e.thread,
-      payload = e.logMap.mapValues(_.toString),
+      payload = e.logMap.view.mapValues(_.toString).toMap,
       validationPayload = getErrorPayload(request, e)
     )
 
@@ -39,12 +39,12 @@ trait RouteLogging extends StrictLogging {
   private def getErrorPayload(request: HttpRequest, e: DomainException) = {
     e match {
       case ve: ValidationException =>
-        ve.validationErrors.toList.groupBy(_.field).mapValues { grouped =>
+        ve.validationErrors.toList.groupBy(_.field).view.mapValues { grouped =>
           grouped map { g =>
             val message = i18nService.getForRequest(request, g.code, g.parameters)
             ValidationEnvelope(g.code, message)
           }
-        }
+        }.toMap
       case _ => Map.empty[String, List[ValidationEnvelope]]
     }
   }

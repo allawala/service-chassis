@@ -3,9 +3,9 @@ package allawala.chassis.common
 import org.mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.{Answer, OngoingStubbing}
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
@@ -17,12 +17,18 @@ trait EvenMoreSugar extends MockitoSugar {
   implicit def pimpedInvocationOnMock(im: InvocationOnMock): PimpedInvocationOnMock = new PimpedInvocationOnMock(im)
 
   class Stubbed[T](c: => T) {
-    def returns(t: T, t2: T*): OngoingStubbing[T] = {
-      if (t2.isEmpty) {
-        Mockito.when(c).thenReturn(t)
-      }
-      else {
-        t2.foldLeft(Mockito.when(c).thenReturn(t)) {
+    def returns(t: T): OngoingStubbing[T] = {
+      Mockito.when(c).thenReturn(t)
+    }
+
+    def returns(t: Seq[T]): OngoingStubbing[T] = {
+      if (t.isEmpty) throw new IllegalArgumentException("At least one result required")
+      if (t.size == 1) {
+        returns(t.head)
+      } else {
+        val head = t.head
+        val tail = t.tail
+        tail.foldLeft(Mockito.when(c).thenReturn(head)) {
           (res, cur) => res.thenReturn(cur)
         }
       }

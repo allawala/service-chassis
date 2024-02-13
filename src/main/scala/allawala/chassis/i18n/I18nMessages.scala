@@ -34,7 +34,7 @@ private[i18n] object UTF8BundleControl extends ResourceBundle.Control {
   val Format = "properties.utf8"
 
   override def getFormats(baseName: String): java.util.List[String] = {
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     Seq(Format).asJava
   }

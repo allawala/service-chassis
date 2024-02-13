@@ -56,7 +56,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
           equ(PrincipalType.User), equ(user), equ(jwtToken), equ(None)
         ) returns Future.successful(Right(()))
 
-        val result = Await.result(service.authenticateCredentials(user, password, rememberMe = false), timeout).right.get
+        val result = Await.result(service.authenticateCredentials(user, password, rememberMe = false), timeout).toOption.get
 
         result.subject should ===(subject)
         result.jwtToken should ===(jwtToken)
@@ -74,7 +74,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
           equ(PrincipalType.User), equ(user), equ(jwtToken), equ(None)
         ) returns Future.successful(Right(()))
 
-        val result = Await.result(service.authenticateCredentials(user, password, rememberMe = true), timeout).right.get
+        val result = Await.result(service.authenticateCredentials(user, password, rememberMe = true), timeout).toOption.get
 
         result.subject should ===(subject)
         result.jwtToken should ===(jwtToken)
@@ -93,7 +93,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
           equ(PrincipalType.User), equ(user), equ(jwtToken), equ(Some(refreshToken))
         ) returns Future.successful(Right(()))
 
-        val result = Await.result(service.authenticateCredentials(user, password, rememberMe = true), timeout).right.get
+        val result = Await.result(service.authenticateCredentials(user, password, rememberMe = true), timeout).toOption.get
 
         result.subject should ===(subject)
         result.jwtToken should ===(jwtToken)
@@ -135,7 +135,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
       new JWTTokenAuthFixture {
         jwtTokenService.decodeToken(jwtToken) returns Right(jwtSubject)
 
-        val result = Await.result(service.authenticateToken(jwtToken, None), timeout).right.get
+        val result = Await.result(service.authenticateToken(jwtToken, None), timeout).toOption.get
 
         result.subject should ===(subject)
         result.jwtToken shouldBe jwtToken
@@ -149,7 +149,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
       new JWTTokenAuthFixture {
         jwtTokenService.decodeToken(jwtToken) returns Right(jwtSubject)
 
-        val result = Await.result(service.authenticateToken(jwtToken, Some(encodedRefreshToken)), timeout).right.get
+        val result = Await.result(service.authenticateToken(jwtToken, Some(encodedRefreshToken)), timeout).toOption.get
 
         result.subject should ===(subject)
         result.jwtToken shouldBe jwtToken
@@ -201,7 +201,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
           equ(PrincipalType.User), equ(user), equ(jwtToken), equ(newJwtToken), equ(refreshToken), equ(newRefreshToken)
         ) returns Future.successful(Right(()))
 
-        val result = Await.result(service.authenticateToken(jwtToken, Some(encodedRefreshToken)), timeout).right.get
+        val result = Await.result(service.authenticateToken(jwtToken, Some(encodedRefreshToken)), timeout).toOption.get
 
         result.subject should ===(subject)
         result.jwtToken shouldBe newJwtToken

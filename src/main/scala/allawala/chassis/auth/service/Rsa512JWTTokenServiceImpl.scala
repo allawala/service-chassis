@@ -25,7 +25,7 @@ class Rsa512JWTTokenServiceImpl @Inject()(
 
   override def generateToken(principalType: PrincipalType, principal: String, expiresIn: TemporalAmount): String = {
     val now = dateTimeProvider.now
-    val Right(claimJson) = parse(
+    val parsed = parse(
       s"""
          |{
          |"iat":${now.getEpochSecond},
@@ -36,6 +36,7 @@ class Rsa512JWTTokenServiceImpl @Inject()(
          |}
          |""".stripMargin
     )
+    val claimJson = parsed.getOrElse(throw new IllegalStateException("Unable to generate token"))
 
     JwtCirce.encode(claimJson, auth.rsa.privateKey, jwtAlgorithm)
   }

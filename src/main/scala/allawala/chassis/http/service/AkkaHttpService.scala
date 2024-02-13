@@ -9,8 +9,8 @@ import allawala.chassis.core.util.LogWrapper
 import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
 import allawala.chassis.i18n.service.I18nService
-import javax.inject.{Inject, Named, Provider}
 
+import javax.inject.{Inject, Named, Provider}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -94,7 +94,7 @@ class AkkaHttpService @Inject()(
           logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] $name SUCCESS ****")
           onSuccess
         } else {
-          failed.map(_.left).map(_.get).foreach(ex => logIt(ex))
+          failed.map(_.swap.toOption.get).foreach(ex => logIt(ex))
           logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] $name FAILURE ****")
           onFailure
         }

@@ -82,7 +82,7 @@ class MDCPropagatingDispatcher(_configurator: MessageDispatcherConfigurator,
     def reportFailure(t: Throwable) = self.reportFailure(t)
   }
 
-  private[this] def setContextMap(context: java.util.Map[String, String]) {
+  private[this] def setContextMap(context: java.util.Map[String, String]) = {
     if (context == null) {
       MDC.clear()
     } else {
