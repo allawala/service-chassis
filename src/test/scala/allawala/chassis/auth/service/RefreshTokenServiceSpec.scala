@@ -20,7 +20,7 @@ class RefreshTokenServiceSpec extends BaseSpec with DateTimeSpec {
     val hashedToken = "hashedToken"
 
     auth.expiration returns expiration
-    dataGenerator.randomString(any[Int]) returns(selector, validator)
+    dataGenerator.randomString(any[Int]) returns(Seq(selector, validator))
     dataGenerator.hashSHA256(equ("validator")) returns hashedToken
     expiration.refreshTokenExpiry returns FiniteDuration(1, TimeUnit.MINUTES)
   }

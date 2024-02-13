@@ -8,9 +8,9 @@ import allawala.chassis.health.model.{BuildDetails, HealthCheckResult, HealthRes
 import allawala.chassis.http.route.{HasRoute, RouteSupport}
 import allawala.chassis.i18n.service.I18nService
 import io.circe.generic.auto._
-import javax.inject.Inject
 
-import scala.collection.JavaConverters._
+import javax.inject.Inject
+import scala.jdk.CollectionConverters._
 
 /*
   NOTE: BuildInfo object is generated on compilation so standalone sbt clean will cause IDE to show errors

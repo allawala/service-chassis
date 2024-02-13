@@ -1,8 +1,8 @@
 package allawala.chassis.health.checks
 
-import java.io.File
-
 import allawala.chassis.health.HealthCheckSupport
+
+import java.io.File
 
 private[health] class LowDiskSpaceHealthCheck extends HealthCheckSupport {
   private val THRESHOLD = 10 * 1024 * 1024 // TODO specify in the config

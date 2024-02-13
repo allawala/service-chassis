@@ -4,7 +4,7 @@ import org.apache.shiro.authc.{AuthenticationInfo, AuthenticationToken, SimpleAc
 import org.apache.shiro.authz.{AuthorizationInfo, SimpleAuthorizationInfo}
 import org.apache.shiro.realm.AuthorizingRealm
 import org.apache.shiro.subject.PrincipalCollection
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /*
   This class is just provided as a placeholder realm as the actual authentication will be specific to the implementing micro

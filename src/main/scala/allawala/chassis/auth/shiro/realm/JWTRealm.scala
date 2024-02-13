@@ -6,7 +6,7 @@ import org.apache.shiro.authz.{AuthorizationInfo, SimpleAuthorizationInfo}
 import org.apache.shiro.realm.AuthorizingRealm
 import org.apache.shiro.subject.PrincipalCollection
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /*
   This class is just provided as an example of an Authorizing JWT realm. It is too permissive for any production environment as

@@ -17,7 +17,7 @@ trait LogWrapper extends StrictLogging {
       errorCode = e.errorCode,
       errorMessage = i18nService.getForDefaultLocale(e.errorCode, e.messageParameters),
       thread = e.thread,
-      payload = e.logMap.mapValues(_.toString),
+      payload = e.logMap.view.mapValues(_.toString).toMap,
       details = getErrorPayload(e)
     )
 
@@ -32,12 +32,12 @@ trait LogWrapper extends StrictLogging {
   private def getErrorPayload(e: DomainException) = {
     e match {
       case ve: ValidationException =>
-        ve.validationErrors.toList.groupBy(_.field).mapValues { grouped =>
+        ve.validationErrors.toList.groupBy(_.field).view.mapValues { grouped =>
           grouped map { g =>
             val message = i18nService.getForDefaultLocale(g.code, g.parameters)
             ValidationEnvelope(g.code, message)
           }
-        }
+        }.toMap
       case _ => Map.empty[String, List[ValidationEnvelope]]
     }
   }

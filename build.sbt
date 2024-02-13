@@ -2,13 +2,14 @@ import sbt.Keys._
 import sbt._
 import sbtbuildinfo.BuildInfoKeys.{buildInfoKeys, buildInfoOptions, buildInfoPackage}
 import sbtbuildinfo.{BuildInfoKey, BuildInfoOption}
+
 import scala.sys.process._
 
 name := """service-chassis"""
 
 organization := "allawala"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.13.8"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -16,12 +17,10 @@ scalacOptions ++= Seq(
   "-unchecked", // Enable additional warnings where generated code depends on assumptions.
   "-Xfatal-warnings", // Fail the compilation if there are any warnings.
   "-Xlint", // Enable recommended additional warnings.
-  "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver.
+  "-Xlint:-byname-implicit", // To disable Block result was adapted via implicit conversion (method apply) taking a by-name parameter
   "-Ywarn-dead-code", // Warn when dead code is identified.
-  "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures.
-  "-Ywarn-nullary-override", // Warn when non-nullary overrides nullary, e.g. def foo() over def foo.
   "-Ywarn-numeric-widen", // Warn when numerics are widened.
-  "-target:jvm-1.8",
+  "-target:11",
   "-encoding", "UTF-8",
   "-language:existentials",
   "-language:higherKinds"
@@ -40,17 +39,18 @@ libraryDependencies ++= {
   val enumeratumVersion = "1.5.13"
   val enumeratumCirceVersion = "1.5.22"
   val ficusVersion = "1.4.7"
-  val groovyVersion = "2.4.10"
-  val guiceVersion = "4.1.0"
-  val scalaGuiceVersion = "4.1.0"
-  val jwtCirceVersion = "4.1.0"
+  val groovyVersion = "3.0.10"
+  val guiceVersion = "5.0.1"
+  val scalaGuiceVersion = "5.0.1"
+  val jakartaXmlBindVersion = "4.0.0"
+  val jwtCirceVersion = "5.0.0"
   val logbackVersion = "1.2.3"
-  val metricsVersion = "3.5.6_a2.4"
-  val mockitoVersion = "2.8.47"
-  val scalaI18nVersion = "1.0.2"
-  val scalaLoggingVersion = "3.5.0"
-  val scalatestVersion = "3.0.1"
-  val shiroVersion = "1.4.0"
+  val metricsVersion = "4.2.9"
+  val mockitoVersion = "3.11.2"
+  val scalaI18nVersion = "1.0.3"
+  val scalaLoggingVersion = "3.9.5"
+  val scalatestVersion = "3.0.8"
+  val shiroVersion = "1.9.1"
   val threeTenExtraVersion = "1.2"
 
   Seq(
@@ -89,18 +89,20 @@ libraryDependencies ++= {
     // JWT
     "com.pauldijou" %% "jwt-circe" % jwtCirceVersion,
 
+    "jakarta.xml.bind" % "jakarta.xml.bind-api" % jakartaXmlBindVersion excludeAll ExclusionRule(organization = "jakarta.activation"),
+
     // Logging
-    "org.codehaus.groovy" % "groovy-all" % groovyVersion, // To allow log config to be defined in groovy
+    "org.codehaus.groovy" % "groovy" % groovyVersion, // To allow log config to be defined in groovy
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
 
     // Metrics
-    "nl.grons" %% "metrics-scala" % metricsVersion,
+    "nl.grons" %% "metrics4-scala" % metricsVersion,
 
     // Shiro
     "org.apache.shiro" % "shiro-core" % shiroVersion,
-    "org.apache.shiro" % "shiro-guice" % shiroVersion,
+    "org.apache.shiro" % "shiro-guice" % shiroVersion excludeAll ExclusionRule(organization = "com.google.inject.extensions"),
 
     // Threeten Extras
     "org.threeten" % "threeten-extra" % threeTenExtraVersion,
@@ -116,7 +118,7 @@ libraryDependencies ++= {
 }
 
 // plugins
-enablePlugins(BuildInfoPlugin, GitVersioning, GitBranchPrompt, DockerPlugin)
+enablePlugins(BuildInfoPlugin, GitVersioning, GitBranchPrompt, sbtdocker.DockerPlugin, JavaAppPackaging)
 
 // BuildInfo plugin Settings
 buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, git.gitCurrentBranch, git.gitHeadCommit)
@@ -158,13 +160,13 @@ removeDangling := {
 
 // docker
 // TODO review these options
-buildOptions in docker := BuildOptions(
+docker / buildOptions := BuildOptions(
   //  cache = false,
   removeIntermediateContainers = BuildOptions.Remove.Always
   //  pullBaseImage = BuildOptions.Pull.Always
 )
 
-imageNames in docker := {
+docker / imageNames := {
   val registry = "xxxxx.dkr.ecr.eu-central-1.amazonaws.com/xxxxx"
 
   def withSha: ImageName = {
@@ -198,24 +200,23 @@ imageNames in docker := {
   val imageName = sys.env.get("BRANCH_NAME").map(_.toLowerCase) match {
     case Some("develop") => withSha
     case Some("master") => withoutSha
-    case _ =>
-      latest
+    case _ => latest
   }
 
   Seq(imageName)
 }
 
-dockerfile in docker := {
+docker / dockerfile := {
   val exposePort = 8080
   // The assembly task generates a fat JAR file
-  val artifact: File = assembly.value
-  val artifactTargetPath = s"/opt/${name.value}/${artifact.name}"
+  val appDir: File = stage.value
+  val targetDir = "/opt"
 
   new Dockerfile {
-    from("hseeberger/scala-sbt:8u141-jdk_2.12.3_0.13.16")
+    from("hseeberger/scala-sbt:11.0.14.1_1.6.2_2.12.15")
     expose(exposePort)
-    copy(artifact, artifactTargetPath)
-    entryPoint("java", "-jar", artifactTargetPath)
+    entryPoint(s"$targetDir/bin/${executableScriptName.value}")
+    copy(appDir, targetDir)
   }
 }
 
@@ -241,7 +242,7 @@ releaseProcess := Seq(
   pushChanges
 )
 
-mappings in (Compile, packageBin) ~= { seq =>
+Compile / packageBin  / mappings ~= { seq =>
   seq.filter{
     case (file, _) =>
       val fileName = file.getName
@@ -264,6 +265,6 @@ import scala.concurrent.duration._
 resolvers += "Git Flow Snapshots" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/sbt-gitflow/snapshots"
 resolvers += "Git Flow Releases" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/sbt-gitflow/releases"
 
-fork in run := true
+run / fork := true
 // Running `sbt test` hangs without the following line, possibly due to https://github.com/sbt/sbt/issues/3022
-parallelExecution in Test := false
+Test / parallelExecution := false

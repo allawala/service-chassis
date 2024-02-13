@@ -1,7 +1,5 @@
 package allawala.chassis.http.route
 
-import java.util.UUID
-
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server._
 import allawala.chassis.auth.exception.AuthenticationException
@@ -12,6 +10,8 @@ import cats.data.NonEmptyList
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import org.apache.shiro.authc.{AuthenticationException => ShiroAuthenticationException}
 import org.slf4j.MDC
+
+import java.util.UUID
 
 trait RouteWrapper extends RouteSupport {
 
@@ -29,7 +29,7 @@ trait RouteWrapper extends RouteSupport {
   }
 
   def routesRejectionHandler: RejectionHandler = RejectionHandler.newBuilder().handle {
-    case rejection: DomainRejection ⇒ fail(rejection.ex)
+    case rejection: DomainRejection => fail(rejection.ex)
   }.result()
 
   /*
@@ -38,7 +38,7 @@ trait RouteWrapper extends RouteSupport {
     we can turn this into a validation exception so that it can be handled better on the client side.
   */
   def circeRejectHandler: RejectionHandler = RejectionHandler.newBuilder().handle {
-    case MalformedRequestContentRejection(msg, ex) if ex.isInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures] ⇒
+    case MalformedRequestContentRejection(msg, ex) if ex.isInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures] =>
       val regex = "DownField\\((.*?)\\)".r
       val errorMessages = ex.asInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures].failures.map(_.getMessage).toList
       val matches = errorMessages.map(e => regex.findAllMatchIn(e).map(_.group(1)).toList)
