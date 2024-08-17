@@ -9,7 +9,7 @@ name := """service-chassis"""
 
 organization := "allawala"
 
-scalaVersion := "2.13.8"
+scalaVersion := "2.13.11"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -20,7 +20,7 @@ scalacOptions ++= Seq(
   "-Xlint:-byname-implicit", // To disable Block result was adapted via implicit conversion (method apply) taking a by-name parameter
   "-Ywarn-dead-code", // Warn when dead code is identified.
   "-Ywarn-numeric-widen", // Warn when numerics are widened.
-  "-target:11",
+  "-release:11",
   "-encoding", "UTF-8",
   "-language:existentials",
   "-language:higherKinds"
@@ -44,7 +44,7 @@ libraryDependencies ++= {
   val scalaGuiceVersion = "5.0.1"
   val jakartaXmlBindVersion = "4.0.0"
   val jwtCirceVersion = "5.0.0"
-  val logbackVersion = "1.2.3"
+  val logbackVersion = "1.4.14"
   val metricsVersion = "4.2.9"
   val mockitoVersion = "3.11.2"
   val scalaI18nVersion = "1.0.3"
@@ -246,7 +246,7 @@ Compile / packageBin  / mappings ~= { seq =>
   seq.filter{
     case (file, _) =>
       val fileName = file.getName
-      !(fileName.equalsIgnoreCase("logback.groovy") || fileName.startsWith("BuildInfo"))
+      !(fileName.equalsIgnoreCase("logback.xml") || fileName.startsWith("BuildInfo"))
   }
 }
 

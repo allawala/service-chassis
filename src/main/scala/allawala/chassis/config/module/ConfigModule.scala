@@ -58,9 +58,9 @@ class ConfigModule extends AbstractModule with ScalaModule {
 
   private def loadEnvConfig = {
     environment match {
-      case Local => // Do nothing, load the default application.conf and logback.groovy
+      case Local => // Do nothing, load the default logback.xml and application.conf
       case _ =>
-        sys.props("logback.configurationFile") = s"logback.${environment.entryName}.groovy"
+        sys.props("logback.configurationFile") = s"logback.${environment.entryName}.xml"
         sys.props("config.resource") = s"application.${environment.entryName}.conf"
     }
     ConfigFactory.invalidateCaches()
