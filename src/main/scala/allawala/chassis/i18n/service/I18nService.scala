@@ -2,7 +2,7 @@ package allawala.chassis.i18n.service
 
 import java.util.Locale
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 import akka.http.scaladsl.model.HttpRequest
 import allawala.chassis.config.model.LanguageConfig
 import allawala.chassis.i18n.I18nMessages
@@ -54,13 +54,14 @@ class I18nService @Inject()(val languageConfig: LanguageConfig) extends StrictLo
 
   protected[service] def getLang(value: String) = {
     val langAndLocale = value.split(",").head.split("-")
-    val lang = langAndLocale.head.toLowerCase
+    val language = langAndLocale.head.toLowerCase
     val locale = langAndLocale.tail.headOption.map(_.toUpperCase)
 
-    locale match {
-      case Some(loc) => Lang(new Locale(lang, loc))
-      case None => Lang(new Locale(lang))
+    val lang = locale match {
+      case Some(region) => Lang(new Locale.Builder().setLanguage(language).setRegion(region).build())
+      case None => Lang(new Locale.Builder().setLanguage(language).build())
     }
+    lang
   }
 
   private def getMessage(resource: String, code: String, messageParameters: Seq[Any], lang: Lang): String = {

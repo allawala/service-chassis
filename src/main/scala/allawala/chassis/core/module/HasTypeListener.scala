@@ -3,7 +3,7 @@ package allawala.chassis.core.module
 import allawala.chassis.util.{Registry, StringConverters}
 import com.google.inject.TypeLiteral
 import com.google.inject.spi.{InjectionListener, TypeEncounter, TypeListener}
-import javax.inject.Provider
+import jakarta.inject.Provider
 
 import scala.reflect.{ClassTag, classTag}
 

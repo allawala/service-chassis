@@ -6,7 +6,6 @@ case class BaseConfig(
                        name: String,
                        httpConfig: HttpConfig,
                        languageConfig: LanguageConfig,
-                       corsConfig: CorsConfig,
                        auth: Auth,
                        awaitTermination: FiniteDuration
                      )

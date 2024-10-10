@@ -1,15 +1,15 @@
-import sbt.Keys._
-import sbt._
+import sbt.Keys.*
+import sbt.*
 import sbtbuildinfo.BuildInfoKeys.{buildInfoKeys, buildInfoOptions, buildInfoPackage}
 import sbtbuildinfo.{BuildInfoKey, BuildInfoOption}
 
-import scala.sys.process._
+import scala.sys.process.*
 
 name := """service-chassis"""
 
 organization := "allawala"
 
-scalaVersion := "2.13.11"
+scalaVersion := "2.13.15"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -20,44 +20,43 @@ scalacOptions ++= Seq(
   "-Xlint:-byname-implicit", // To disable Block result was adapted via implicit conversion (method apply) taking a by-name parameter
   "-Ywarn-dead-code", // Warn when dead code is identified.
   "-Ywarn-numeric-widen", // Warn when numerics are widened.
-  "-release:11",
+  "-release:21",
   "-encoding", "UTF-8",
   "-language:existentials",
   "-language:higherKinds"
 )
 
 libraryDependencies ++= {
-  val akkaVersion = "2.6.10"
-  val akkaHttpCorsVersion = "1.1.0"
-  val akkaHttpVersion = "10.2.1"
-  val akkaHttpCirceVersion = "1.35.0"
+  val akkaVersion = "2.9.5"
+  val akkaHttpVersion = "10.6.3"
+  val akkaHttpCirceVersion = "1.39.2"
   val beanUtilsVersion = "1.9.4"
-  val bouncyCastleVersion = "1.64"
-  val circeVersion = "0.12.3"
-  val circeOpticsVersion = "0.12.0"
-  val circeGenericsVersion = "0.12.2"
-  val enumeratumVersion = "1.5.13"
-  val enumeratumCirceVersion = "1.5.22"
-  val ficusVersion = "1.4.7"
-  val groovyVersion = "3.0.10"
-  val guiceVersion = "5.0.1"
-  val scalaGuiceVersion = "5.0.1"
-  val jakartaXmlBindVersion = "4.0.0"
-  val jwtCirceVersion = "5.0.0"
-  val logbackVersion = "1.4.14"
-  val metricsVersion = "4.2.9"
-  val mockitoVersion = "3.11.2"
-  val scalaI18nVersion = "1.0.3"
+  val bouncyCastleVersion = "1.78.1"
+  val circeVersion = "0.14.10"
+  val circeOpticsVersion = "0.15.0"
+  val circeGenericsVersion = "0.14.4"
+  val enumeratumVersion = "1.7.5"
+  val enumeratumCirceVersion = "1.7.5"
+  val ficusVersion = "1.5.2"
+  val guiceVersion = "7.0.0"
+  val scalaGuiceVersion = "7.0.0"
+  val jakartaXmlBindVersion = "4.0.2"
+  val jwtCirceVersion = "10.0.1"
+  val logbackVersion = "1.5.8"
+  val metricsVersion = "4.3.2"
+  val mockitoVersion = "5.14.1"
+  val scalaI18nVersion = "1.1.0"
   val scalaLoggingVersion = "3.9.5"
-  val scalatestVersion = "3.0.8"
-  val shiroVersion = "1.9.1"
-  val threeTenExtraVersion = "1.2"
+  val scalatestVersion = "3.2.19"
+  val scalatestMockitoVersion = "3.2.19.0"
+  val shiroVersion = "1.13.0"
+  val threeTenExtraVersion = "1.8.0"
 
   Seq(
     // Akka
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-    "ch.megard" %% "akka-http-cors" % akkaHttpCorsVersion,
     "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+    "com.typesafe.akka" %% "akka-pki" % akkaVersion,
 
     // BeanUtils
     "commons-beanutils" % "commons-beanutils" % beanUtilsVersion,
@@ -87,12 +86,11 @@ libraryDependencies ++= {
     "de.heikoseeberger" %% "akka-http-circe" % akkaHttpCirceVersion excludeAll ExclusionRule(organization = "io.circe"),
 
     // JWT
-    "com.pauldijou" %% "jwt-circe" % jwtCirceVersion,
+    "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion,
 
     "jakarta.xml.bind" % "jakarta.xml.bind-api" % jakartaXmlBindVersion excludeAll ExclusionRule(organization = "jakarta.activation"),
 
     // Logging
-    "org.codehaus.groovy" % "groovy" % groovyVersion, // To allow log config to be defined in groovy
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
@@ -113,7 +111,8 @@ libraryDependencies ++= {
     // Test Dependencies
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
     "org.mockito" % "mockito-core" % mockitoVersion % "test",
-    "org.scalatest" %% "scalatest" % scalatestVersion % "test"
+    "org.scalatest" %% "scalatest" % scalatestVersion % "test",
+    "org.scalatestplus" %% "mockito-5-12" % scalatestMockitoVersion % "test"
   )
 }
 
@@ -221,9 +220,9 @@ docker / dockerfile := {
 }
 
 // releasing with the gitflow plugin
-import sbtrelease._
-import allawala.sbt.sbtrelease.gitflow.Steps._
-import sbtrelease.ReleaseStateTransformations._
+import sbtrelease.*
+import allawala.sbt.sbtrelease.gitflow.Steps.*
+import sbtrelease.ReleaseStateTransformations.*
 
 releaseProcess := Seq(
   releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
@@ -264,6 +263,7 @@ import scala.concurrent.duration._
 
 resolvers += "Git Flow Snapshots" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/sbt-gitflow/snapshots"
 resolvers += "Git Flow Releases" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/sbt-gitflow/releases"
+resolvers += "Akka library repository".at("https://repo.akka.io/maven")
 
 run / fork := true
 // Running `sbt test` hangs without the following line, possibly due to https://github.com/sbt/sbt/issues/3022

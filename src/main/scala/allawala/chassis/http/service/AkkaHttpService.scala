@@ -9,8 +9,9 @@ import allawala.chassis.core.util.LogWrapper
 import allawala.chassis.http.lifecycle.LifecycleAwareRegistry
 import allawala.chassis.http.route.Routes
 import allawala.chassis.i18n.service.I18nService
+import ch.qos.logback.core.util.StatusPrinter2
 
-import javax.inject.{Inject, Named, Provider}
+import jakarta.inject.{Inject, Named, Provider}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -38,7 +39,7 @@ class AkkaHttpService @Inject()(
 
   private def bind() = {
     Http().newServerAt(baseConfig.httpConfig.host, baseConfig.httpConfig.port).bindFlow(routes.route).onComplete {
-      case Success(b) => {
+      case Success(b) =>
         logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] INITIALIZED @ ${b.localAddress.getHostString}:${b.localAddress.getPort} ****.")
         executeLifeCycleEventsAndThen("POST START", Future.sequence(lifecycleAwareRegistryProvider.get().get().map(_.postStart()))) {
           () // If successful, do nothing
@@ -51,7 +52,6 @@ class AkkaHttpService @Inject()(
           logger.info(s"**** [${environment.entryName}] [${actorSystem.name}] SHUTTING DOWN ****.")
           preStop(Some(b))
         }
-      }
       case Failure(e) =>
         logger.error(s"**** [${environment.entryName}] [${actorSystem.name}] FAILED TO START **** ", e)
         actorSystem.terminate()
@@ -75,18 +75,17 @@ class AkkaHttpService @Inject()(
     Await.result(actorSystem.whenTerminated, baseConfig.awaitTermination)
   }
 
-  private def printLogbackConfig() = {
+  private def printLogbackConfig(): Unit = {
     import ch.qos.logback.classic.LoggerContext
-    import ch.qos.logback.core.util.StatusPrinter
     import org.slf4j.LoggerFactory
 
     val context: LoggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
-    StatusPrinter.print(context)
+    new StatusPrinter2().print(context)
   }
 
   private def executeLifeCycleEventsAndThen(name: String, events: Future[Seq[Either[InitializationException, Unit]]])
                                            (onSuccess: => Unit)
-                                           (onFailure: => Unit) = {
+                                           (onFailure: => Unit): Unit = {
     events.onComplete {
       case Success(results) =>
         val failed: Seq[Either[InitializationException, Unit]] = results.filter(_.isLeft)

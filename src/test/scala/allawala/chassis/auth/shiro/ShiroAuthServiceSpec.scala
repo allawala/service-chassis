@@ -21,7 +21,7 @@ class ShiroAuthServiceSpec extends BaseSpec with FutureSpec with DateTimeSpec {
   private val tokenStorageService = mock[TokenStorageService]
 
   before {
-    reset(subject, auth, expiration, jwtTokenService, refreshTokenService, tokenStorageService)
+    reset[Any](subject, auth, expiration, jwtTokenService, refreshTokenService, tokenStorageService)
   }
 
   private val service =

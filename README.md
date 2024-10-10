@@ -1,10 +1,11 @@
 ## Release Information
 | Release          | Scala Compatibility | Java Compatibility |
 |------------------|---------------------|--------------------|
-| 1.0.14 or higher | 2.13                | JDK-11             |
+| 1.0.16 or higher | 2.13                | JDK-21             |
+| 1.0.14 to 1.0.15 | 2.13                | JDK-11             |
 | 1.0.13 or lower  | 2.12                | JDK-8              | 
 
-Latest version : 1.0.14
+Latest version : 1.0.16
 
 Releases
 
@@ -110,6 +111,10 @@ The following sbt plugins are used
 - s3 Resolver [fm-sbt-s3-resolver](https://github.com/frugalmechanic/fm-sbt-s3-resolver)
     s3 will be used to host the snapshot and release jars
 
+
+## NOTE
+
+- Running via sbt will not pickup the logback file or the buildinfo as compile -> package step filters them out (see build.sbt) 
 
 ## Documentation
 Uses gh-pages branch

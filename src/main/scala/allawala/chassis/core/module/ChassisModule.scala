@@ -13,7 +13,7 @@ import allawala.chassis.i18n.module.I18nModule
 import allawala.chassis.util.module.UtilModule
 import com.google.inject.{AbstractModule, Provides, Singleton}
 import com.typesafe.config.Config
-import javax.inject.Named
+import jakarta.inject.Named
 import net.codingwell.scalaguice.ScalaModule
 
 import scala.concurrent.ExecutionContext
