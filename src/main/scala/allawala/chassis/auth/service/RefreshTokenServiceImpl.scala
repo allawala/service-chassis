@@ -1,6 +1,6 @@
 package allawala.chassis.auth.service
 import java.time.{Duration => JDuration}
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 import allawala.chassis.auth.model.RefreshToken
 import allawala.chassis.config.model.Auth

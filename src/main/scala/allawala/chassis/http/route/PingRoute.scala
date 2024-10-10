@@ -1,5 +1,5 @@
 package allawala.chassis.http.route
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Route
@@ -10,6 +10,11 @@ class PingRoute @Inject()(override val i18nService: I18nService) extends HasRout
     path("ping") {
       logger.info("ping -> pong")
       complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "pong"))
+    } ~ path("i18n") {
+      extractRequestContext { requestContext =>
+        val message = i18nService.getForRequest(requestContext.request, "authorization.error")
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, message))
+      }
     }
   }
 }

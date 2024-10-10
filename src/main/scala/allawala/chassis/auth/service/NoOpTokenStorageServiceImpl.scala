@@ -1,6 +1,6 @@
 package allawala.chassis.auth.service
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 import allawala.ResponseFE
 import allawala.chassis.auth.model.{PrincipalType, RefreshToken}

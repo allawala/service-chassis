@@ -1,8 +1,10 @@
 package allawala.chassis.common
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 
-trait BaseSpec extends WordSpecLike
+trait BaseSpec extends AnyWordSpecLike
   with Matchers
   with EvenMoreSugar
   with BeforeAndAfter
