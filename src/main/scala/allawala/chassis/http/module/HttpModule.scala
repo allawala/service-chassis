@@ -5,7 +5,7 @@ import allawala.chassis.http.lifecycle.{LifecycleAware, LifecycleAwareRegistry}
 import allawala.chassis.http.route.{HasRoute, PingRoute, RouteRegistry, Routes}
 import com.google.inject.matcher.Matchers
 import com.google.inject.{AbstractModule, Provides, Singleton}
-import javax.inject.Provider
+import jakarta.inject.Provider
 import net.codingwell.scalaguice.ScalaModule
 
 class HttpModule extends AbstractModule with ScalaModule {

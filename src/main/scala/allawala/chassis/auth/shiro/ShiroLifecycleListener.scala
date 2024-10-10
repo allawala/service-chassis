@@ -1,6 +1,6 @@
 package allawala.chassis.auth.shiro
 
-import javax.inject.{Inject, Named}
+import jakarta.inject.{Inject, Named}
 
 import allawala.chassis.core.exception.InitializationException
 import allawala.chassis.http.lifecycle.LifecycleAware

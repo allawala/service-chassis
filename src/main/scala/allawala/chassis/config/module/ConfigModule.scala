@@ -46,12 +46,6 @@ class ConfigModule extends AbstractModule with ScalaModule {
 
   @Provides
   @Singleton
-  def getCorsConfig(config: BaseConfig): CorsConfig = {
-    config.corsConfig
-  }
-
-  @Provides
-  @Singleton
   def getLanguageConfig(config: BaseConfig): LanguageConfig = {
     config.languageConfig
   }

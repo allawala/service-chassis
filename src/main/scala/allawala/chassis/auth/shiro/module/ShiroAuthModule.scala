@@ -1,6 +1,6 @@
 package allawala.chassis.auth.shiro.module
 
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 import allawala.chassis.auth.shiro.ShiroLifecycleListener
 import allawala.chassis.auth.shiro.realm.{JWTRealm, UsernamePasswordRealm}

@@ -8,7 +8,7 @@ import allawala.chassis.auth.shiro.model.{AuthenticatedSubject, JWTAuthenticatio
 import allawala.chassis.config.model.{Auth, RefreshStrategy}
 import allawala.chassis.core.exception.DomainException
 import allawala.chassis.util.DateTimeProvider
-import javax.inject.{Inject, Named}
+import jakarta.inject.{Inject, Named}
 import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.subject.Subject
 
