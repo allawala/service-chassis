@@ -1,6 +1,6 @@
 package allawala.chassis.auth.exception
 
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import org.apache.pekko.http.scaladsl.model.{StatusCode, StatusCodes}
 import allawala.chassis.core.exception.DomainException
 import allawala.chassis.core.model.ErrorType
 

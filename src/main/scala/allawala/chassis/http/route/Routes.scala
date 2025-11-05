@@ -1,9 +1,9 @@
 package allawala.chassis.http.route
 
-import akka.http.scaladsl.server.{Directive, RejectionHandler, Route}
+import org.apache.pekko.http.scaladsl.server.{Directive, RejectionHandler, Route}
 import allawala.chassis.i18n.service.I18nService
-
 import jakarta.inject.{Inject, Provider}
+import org.apache.pekko.http.cors.scaladsl.CorsDirectives.cors
 
 class Routes @Inject()(
                         val routeRegistryProvider: Provider[RouteRegistry],

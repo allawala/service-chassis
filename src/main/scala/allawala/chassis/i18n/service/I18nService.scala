@@ -3,7 +3,7 @@ package allawala.chassis.i18n.service
 import java.util.Locale
 
 import jakarta.inject.Inject
-import akka.http.scaladsl.model.HttpRequest
+import org.apache.pekko.http.scaladsl.model.HttpRequest
 import allawala.chassis.config.model.LanguageConfig
 import allawala.chassis.i18n.I18nMessages
 import com.osinka.i18n.Lang

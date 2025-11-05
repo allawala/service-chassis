@@ -1,8 +1,8 @@
 package allawala.chassis.http.route
 import jakarta.inject.Inject
 
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
-import akka.http.scaladsl.server.Route
+import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity}
+import org.apache.pekko.http.scaladsl.server.Route
 import allawala.chassis.i18n.service.I18nService
 
 class PingRoute @Inject()(override val i18nService: I18nService) extends HasRoute with RouteSupport {

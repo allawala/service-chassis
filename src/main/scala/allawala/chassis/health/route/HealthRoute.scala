@@ -1,7 +1,7 @@
 package allawala.chassis.health.route
 
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.Route
+import org.apache.pekko.http.scaladsl.model.StatusCodes._
+import org.apache.pekko.http.scaladsl.server.Route
 import allawala.BuildInfo
 import allawala.chassis.health.HealthCheckSupport
 import allawala.chassis.health.model.{BuildDetails, HealthCheckResult, HealthResult}

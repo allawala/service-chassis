@@ -1,8 +1,8 @@
 package allawala.chassis.http.service
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.stream.Materializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.stream.Materializer
 import allawala.chassis.config.model.{BaseConfig, Environment}
 import allawala.chassis.core.exception.InitializationException
 import allawala.chassis.core.util.LogWrapper
@@ -15,7 +15,7 @@ import jakarta.inject.{Inject, Named, Provider}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class AkkaHttpService @Inject()(
+class PekkoHttpService @Inject()(
                                  val baseConfig: BaseConfig,
                                  val routes: Routes,
                                  val environment: Environment,

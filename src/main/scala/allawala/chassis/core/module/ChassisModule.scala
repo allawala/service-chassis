@@ -1,14 +1,14 @@
   package allawala.chassis.core.module
 
-import akka.actor.ActorSystem
-import akka.event.{Logging, LoggingAdapter}
-import akka.stream.Materializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.event.{Logging, LoggingAdapter}
+import org.apache.pekko.stream.Materializer
 import allawala.chassis.auth.module.AuthModule
 import allawala.chassis.config.model.BaseConfig
 import allawala.chassis.config.module.ConfigModule
 import allawala.chassis.health.module.HealthModule
 import allawala.chassis.http.module.HttpModule
-import allawala.chassis.http.service.AkkaHttpService
+import allawala.chassis.http.service.PekkoHttpService
 import allawala.chassis.i18n.module.I18nModule
 import allawala.chassis.util.module.UtilModule
 import com.google.inject.{AbstractModule, Provides, Singleton}
@@ -27,7 +27,7 @@ abstract class ChassisModule extends AbstractModule with ScalaModule {
     bindI18nModule()
     bindAuthModule()
 
-    bind[AkkaHttpService].asEagerSingleton()
+    bind[PekkoHttpService].asEagerSingleton()
   }
 
   protected def bindConfigModule(): Unit = {
@@ -56,7 +56,7 @@ abstract class ChassisModule extends AbstractModule with ScalaModule {
 
   @Provides
   @Singleton
-  def getAkkaMaterializer(implicit actorSystem: ActorSystem): Materializer = {
+  def getPekkoMaterializer(implicit actorSystem: ActorSystem): Materializer = {
     Materializer.matFromSystem
   }
 

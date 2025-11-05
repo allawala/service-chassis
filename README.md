@@ -5,7 +5,10 @@
 | 1.0.14 to 1.0.15 | 2.13                | JDK-11             |
 | 1.0.13 or lower  | 2.12                | JDK-8              | 
 
-Latest version : 1.0.16
+## 2.x.x Breaking Change
+- Akka has been replaced with Pekko
+
+Latest version : 2.0.0-SNAPSHOT
 
 Releases
 

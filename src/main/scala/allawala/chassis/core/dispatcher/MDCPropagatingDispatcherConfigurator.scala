@@ -2,7 +2,7 @@ package allawala.chassis.core.dispatcher
 
 import java.util.concurrent.TimeUnit
 
-import akka.dispatch._
+import org.apache.pekko.dispatch._
 import com.typesafe.config.Config
 import org.slf4j.MDC
 
