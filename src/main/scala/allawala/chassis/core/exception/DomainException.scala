@@ -1,6 +1,6 @@
 package allawala.chassis.core.exception
 
-import akka.http.scaladsl.model.StatusCode
+import org.apache.pekko.http.scaladsl.model.StatusCode
 import allawala.chassis.core.model.ErrorType
 
 trait DomainException extends Exception {

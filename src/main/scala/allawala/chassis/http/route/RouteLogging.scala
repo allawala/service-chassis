@@ -1,6 +1,6 @@
 package allawala.chassis.http.route
 
-import akka.http.scaladsl.model.HttpRequest
+import org.apache.pekko.http.scaladsl.model.HttpRequest
 import allawala.chassis.core.exception.{DomainException, ValidationException}
 import allawala.chassis.core.model.{ErrorEnvelope, HttpErrorLog, ValidationEnvelope}
 import allawala.chassis.i18n.service.I18nService

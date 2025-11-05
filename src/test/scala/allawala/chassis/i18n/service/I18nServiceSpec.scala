@@ -2,8 +2,8 @@ package allawala.chassis.i18n.service
 
 import java.util.Locale
 
-import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest, Uri}
+import org.apache.pekko.http.scaladsl.model.headers.RawHeader
+import org.apache.pekko.http.scaladsl.model.{HttpHeader, HttpRequest, Uri}
 import allawala.chassis.common.BaseSpec
 import allawala.chassis.config.model.LanguageConfig
 

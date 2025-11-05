@@ -1,6 +1,6 @@
 package allawala.chassis.core.rejection
 
-import akka.http.scaladsl.server.Rejection
+import org.apache.pekko.http.scaladsl.server.Rejection
 import allawala.chassis.core.exception.DomainException
 
 import scala.language.implicitConversions

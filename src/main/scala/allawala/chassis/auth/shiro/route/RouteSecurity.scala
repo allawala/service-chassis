@@ -1,9 +1,9 @@
 package allawala.chassis.auth.shiro.route
 
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.server.{Directive0, Directive1, Directives}
-import akka.stream.Materializer
+import org.apache.pekko.http.scaladsl.model.HttpRequest
+import org.apache.pekko.http.scaladsl.model.headers.RawHeader
+import org.apache.pekko.http.scaladsl.server.{Directive0, Directive1, Directives}
+import org.apache.pekko.stream.Materializer
 import allawala.ResponseFE
 import allawala.chassis.auth.exception.{AuthenticationException, AuthorizationException}
 import allawala.chassis.auth.shiro.model.AuthenticatedSubject

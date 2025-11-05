@@ -1,7 +1,7 @@
 package allawala.chassis.http.route
 
-import akka.http.scaladsl.server.{Directive1, Directives}
-import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
+import org.apache.pekko.http.scaladsl.server.{Directive1, Directives}
+import org.apache.pekko.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import allawala.ValidationResult
 import allawala.chassis.core.exception.ValidationException
 import allawala.chassis.core.rejection.DomainRejection._

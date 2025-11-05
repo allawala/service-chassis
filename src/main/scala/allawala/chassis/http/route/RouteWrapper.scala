@@ -1,13 +1,13 @@
 package allawala.chassis.http.route
 
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server._
+import org.apache.pekko.http.scaladsl.model.StatusCodes._
+import org.apache.pekko.http.scaladsl.server._
 import allawala.chassis.auth.exception.AuthenticationException
 import allawala.chassis.core.exception.{DomainException, UnexpectedException, ValidationException}
 import allawala.chassis.core.rejection.DomainRejection
 import allawala.chassis.core.validation.RequiredField
 import cats.data.NonEmptyList
-import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
+import com.github.pjfanning.pekkohttpcirce.ErrorAccumulatingCirceSupport
 import org.apache.shiro.authc.{AuthenticationException => ShiroAuthenticationException}
 import org.slf4j.MDC
 
@@ -22,7 +22,7 @@ trait RouteWrapper extends RouteSupport {
       case e: IllegalArgumentException => fail(BadRequest, UnexpectedException(errorCode = "invalid.request", e))
       case e: ShiroAuthenticationException => fail(AuthenticationException(cause = e))
       case e: NoSuchElementException =>
-        // For akka http cors. Ignore logging
+        // For http cors. Ignore logging
         complete(NotFound -> e.getMessage)
       case e: Exception => fail(InternalServerError, UnexpectedException(cause = e))
     }
@@ -39,12 +39,12 @@ trait RouteWrapper extends RouteSupport {
   */
   def circeRejectHandler: RejectionHandler = RejectionHandler.newBuilder().handle {
     case MalformedRequestContentRejection(msg, ex) if ex.isInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures] =>
-      val regex = "DownField\\((.*?)\\)".r
-      val errorMessages = ex.asInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures].failures.map(_.getMessage).toList
-      val matches = errorMessages.map(e => regex.findAllMatchIn(e).map(_.group(1)).toList)
-      val requiredFields = for (m <- matches) yield {
-        val field = m.reverse.mkString(".")
-        RequiredField(field)
+      val failures = ex.asInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures].failures
+      val requiredFields = failures.toList.flatMap { failure =>
+        val path = failure.history.reverse.collect {
+          case io.circe.CursorOp.DownField(field) => field
+        }.mkString(".")
+        if (path.nonEmpty) Some(RequiredField(path)) else None
       }
       fail(ValidationException(NonEmptyList.fromListUnsafe(requiredFields)))
   }.result()

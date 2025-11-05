@@ -1,13 +1,13 @@
 package allawala.chassis.http.route
 
-import akka.http.scaladsl.marshalling.ToEntityMarshaller
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
-import akka.http.scaladsl.model.StatusCodes.OK
-import akka.http.scaladsl.server.{Directives, Route}
+import org.apache.pekko.http.scaladsl.marshalling.ToEntityMarshaller
+import org.apache.pekko.http.scaladsl.model.{StatusCode, StatusCodes}
+import org.apache.pekko.http.scaladsl.model.StatusCodes.OK
+import org.apache.pekko.http.scaladsl.server.{Directives, Route}
 import allawala.chassis.core.exception.DomainException
 import allawala.{ResponseE, ResponseFE}
 import cats.data.EitherT
-import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
+import com.github.pjfanning.pekkohttpcirce.ErrorAccumulatingCirceSupport
 import org.slf4j.MDC
 
 import scala.concurrent.Future
