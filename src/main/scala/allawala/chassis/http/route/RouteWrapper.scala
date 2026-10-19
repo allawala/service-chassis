@@ -7,7 +7,7 @@ import allawala.chassis.core.exception.{DomainException, UnexpectedException, Va
 import allawala.chassis.core.rejection.DomainRejection
 import allawala.chassis.core.validation.RequiredField
 import cats.data.NonEmptyList
-import com.github.pjfanning.pekkohttpcirce.ErrorAccumulatingCirceSupport
+import com.github.pjfanning.pekkohttpcircebase.ErrorAccumulatingSupport
 import org.apache.shiro.authc.{AuthenticationException => ShiroAuthenticationException}
 import org.slf4j.MDC
 
@@ -38,8 +38,8 @@ trait RouteWrapper extends RouteSupport {
     we can turn this into a validation exception so that it can be handled better on the client side.
   */
   def circeRejectHandler: RejectionHandler = RejectionHandler.newBuilder().handle {
-    case MalformedRequestContentRejection(msg, ex) if ex.isInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures] =>
-      val failures = ex.asInstanceOf[ErrorAccumulatingCirceSupport.DecodingFailures].failures
+    case MalformedRequestContentRejection(msg, ex) if ex.isInstanceOf[ErrorAccumulatingSupport.DecodingFailures] =>
+      val failures = ex.asInstanceOf[ErrorAccumulatingSupport.DecodingFailures].failures
       val requiredFields = failures.toList.flatMap { failure =>
         val path = failure.history.reverse.collect {
           case io.circe.CursorOp.DownField(field) => field

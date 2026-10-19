@@ -8,20 +8,11 @@
 ## 2.x.x Breaking Change
 - Akka has been replaced with Pekko
 
-Latest version : 2.0.0-SNAPSHOT
+Latest version : 2.0.1
 
 Releases
 
-    "allawala" %% "service-chassis" % {version}
-
-Snapshot
-
-    "allawala" %% "service-chassis" % {version-SNAPSHOT}
-
-Resolvers
-
-    resolvers += "Service Chassis Snapshots" at "https://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/service-chassis/snapshots"
-    resolvers += "Service Chassis Releases" at "https://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/service-chassis/releases"
+    "io.github.allawala" %% "service-chassis" % {version}
 
 
 ## Commit Messages

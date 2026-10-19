@@ -2,14 +2,13 @@ import sbt.Keys.*
 import sbt.*
 import sbtbuildinfo.BuildInfoKeys.{buildInfoKeys, buildInfoOptions, buildInfoPackage}
 import sbtbuildinfo.{BuildInfoKey, BuildInfoOption}
-
 import scala.sys.process.*
 
 name := """service-chassis"""
 
-organization := "allawala"
+organization := "io.github.allawala"
 
-scalaVersion := "2.13.17"
+scalaVersion := "2.13.18"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -28,30 +27,30 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= {
-  val pekkoVersion            = "1.2.1"
-  val pekkoHttpVersion        = "1.3.0"
-  val pekkoHttpCirceVersion   = "2.8.0"
+  val pekkoVersion            = "1.7.1"
+  val pekkoHttpVersion        = "1.4.2"
+  val pekkoHttpCirceVersion   = "3.12.0"
   val beanUtilsVersion        = "1.11.0"
-  val bouncyCastleVersion     = "1.82"
-  val circeVersion            = "0.14.15"
+  val bouncyCastleVersion     = "1.86"
+  val circeVersion            = "0.14.17"
   val circeOpticsVersion      = "0.15.1"
   val circeGenericsVersion    = "0.14.4"
-  val enumeratumVersion       = "1.9.0"
-  val enumeratumCirceVersion  = "1.9.0"
+  val enumeratumVersion       = "1.9.8"
+  val enumeratumCirceVersion  = "1.9.8"
   val ficusVersion            = "1.5.2"
   val guiceVersion            = "7.0.0"
   val scalaGuiceVersion       = "7.0.0"
-  val jakartaXmlBindVersion   = "4.0.4"
-  val jwtCirceVersion         = "11.0.3"
-  val logbackVersion          = "1.5.20"
-  val metricsVersion          = "4.3.2"
-  val mockitoVersion          = "5.14.1"
+  val jakartaXmlBindVersion   = "4.0.5"
+  val jwtCirceVersion         = "11.0.4"
+  val logbackVersion          = "1.6.5"
+  val metricsVersion          = "4.3.7"
+  val mockitoVersion          = "5.24.0"
   val scalaI18nVersion        = "1.1.0"
-  val scalaLoggingVersion     = "3.9.5"
-  val scalatestVersion        = "3.2.19"
-  val scalatestMockitoVersion = "3.2.19.0"
-  val shiroVersion            = "2.0.5"
-  val threeTenExtraVersion    = "1.8.0"
+  val scalaLoggingVersion     = "3.9.6"
+  val scalatestVersion        = "3.2.20"
+  val scalatestMockitoVersion = "3.2.20.0"
+  val shiroVersion            = "2.2.1"
+  val threeTenExtraVersion    = "1.11.0"
 
   Seq(
     // Pekko
@@ -100,7 +99,7 @@ libraryDependencies ++= {
     "org.apache.pekko"  %% "pekko-http-testkit" % pekkoHttpVersion        % "test",
     "org.mockito"       % "mockito-core"        % mockitoVersion          % "test",
     "org.scalatest"     %% "scalatest"          % scalatestVersion        % "test",
-    "org.scalatestplus" %% "mockito-5-12"       % scalatestMockitoVersion % "test"
+    "org.scalatestplus" %% "mockito-5-23"       % scalatestMockitoVersion % "test"
   )
 }
 
@@ -119,6 +118,7 @@ git.baseVersion := "1.0.0"
 
 // publish info
 publishMavenStyle := true
+// Publish to s3
 publishTo := {
   if (version.value.endsWith("SNAPSHOT")) {
     Some("Service Chassis Snapshots" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/service-chassis/snapshots")
