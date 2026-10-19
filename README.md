@@ -19,6 +19,11 @@ Releases
 
 see [git-commit](https://chris.beams.io/posts/git-commit/) for an acceptable commit message structure
 
+## s3 resolver by ohnosequences seems to have been removed from maven and the one by frugalmechanic logs the AWS access id
+## in build pipelines. So publishing to maven public repo. Caveat. The sonatype plugin does not allow snapshots to be published
+## run `sbt sonatypeDetails` to get more details about sonatype publishing. Need to publish from master branch
+## run `sbt publishSigned`
+## run `sbt sonatypeBundleRelease`
 
 ## QUICK START
 

@@ -1,7 +1,9 @@
-import sbt.Keys.*
 import sbt.*
+import sbt.Keys.*
 import sbtbuildinfo.BuildInfoKeys.{buildInfoKeys, buildInfoOptions, buildInfoPackage}
 import sbtbuildinfo.{BuildInfoKey, BuildInfoOption}
+import xerial.sbt.Sonatype.sonatypeCentralHost
+
 import scala.sys.process.*
 
 name := """service-chassis"""
@@ -118,14 +120,29 @@ git.baseVersion := "1.0.0"
 
 // publish info
 publishMavenStyle := true
-// Publish to s3
-publishTo := {
-  if (version.value.endsWith("SNAPSHOT")) {
-    Some("Service Chassis Snapshots" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/service-chassis/snapshots")
-  } else {
-    Some("Service Chassis Snapshots" at "s3://s3-ap-southeast-2.amazonaws.com/maven.allawala.com/service-chassis/releases")
-  }
+
+lazy val sonatypeDetails = taskKey[Unit]("print stuff")
+sonatypeDetails := {
+  val s: TaskStreams = streams.value
+  val p = sonatypePublishToBundle.value.map(_.name).getOrElse("unknown")
+  s.log.info(sonatypeCentralHost)
+  s.log.info(sonatypeRepository.value)
+  s.log.info(p)
+  Command.process("show publishTo", state.value)
 }
+
+// Publish to sonatype
+credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")
+ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
+publishTo := sonatypePublishToBundle.value
+sonatypeProfileName := "io.github.allawala"
+
+licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+homepage := Some(url("https://github.com/allawala/service-chassis"))
+scmInfo := Some(ScmInfo(url("https://github.com/allawala/service-chassis"), "scm:git@github.com:allawala/service-chassis.git"))
+developers := List(
+  Developer(id="allawala", name="allawala", email="", url=url("https://github.com/allawala"))
+)
 
 lazy val removeDangling = taskKey[Unit]("Task to clean up dangling docker images")
 
@@ -207,8 +224,8 @@ docker / dockerfile := {
 }
 
 // releasing with the gitflow plugin
-import sbtrelease.*
 import allawala.sbt.sbtrelease.gitflow.Steps.*
+import sbtrelease.*
 import sbtrelease.ReleaseStateTransformations.*
 
 releaseProcess := Seq(
